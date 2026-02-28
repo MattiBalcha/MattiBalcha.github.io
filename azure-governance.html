@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure SQL Migration & Data Governance | Matti Balcha Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080E1E;--surface:#0D1628;--card:#111D35;--border:#1A2B4A;--cyan:#22D3EE;--cyan-dim:rgba(34,211,238,0.10);--green:#34D399;--amber:#F59E0B;--text:#E2E8F0;--muted:#7A8BA8;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(34,211,238,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.02) 1px,transparent 1px);background-size:48px 48px;}
+.back-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,14,30,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;}
+.back-bar-inner{max-width:1200px;margin:0 auto;padding:0 24px;width:100%;display:flex;align-items:center;justify-content:space-between;}
+.back-link{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}.back-link:hover{color:var(--cyan)}.back-link .arrow{color:var(--cyan)}
+.breadcrumb{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;}.breadcrumb .sep{color:var(--border)}.breadcrumb .current{color:var(--cyan)}
+.layout{display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1200px;margin:0 auto;padding:0 24px;min-height:100vh;padding-top:52px;}
+.sidebar{position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;padding:32px 24px 32px 0;border-right:1px solid var(--border);}
+.sb-label{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:20px;}.sb-label:first-child{margin-top:0}
+.sb-nav a{display:block;font-family:var(--mono);font-size:11px;padding:7px 12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:all 0.2s;border-radius:0 4px 4px 0;margin-bottom:2px;}.sb-nav a:hover,.sb-nav a.active{color:var(--cyan);border-left-color:var(--cyan);background:var(--cyan-dim);}
+.sb-metrics{display:flex;flex-direction:column;gap:8px;margin-top:12px;}.sb-metric{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}.sb-metric-val{font-family:var(--display);font-size:20px;font-weight:800;color:var(--cyan);line-height:1;}.sb-metric-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.main{padding:48px 0 80px 48px;position:relative;z-index:1;}
+.hero-section{padding-bottom:40px;border-bottom:1px solid var(--border);margin-bottom:40px;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:12px;}.eyebrow::before{content:'';width:28px;height:1px;background:var(--cyan)}
+h1{font-family:var(--display);font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.15;color:#fff;margin-bottom:16px;letter-spacing:-0.02em;}h1 em{color:var(--cyan);font-style:normal}
+.meta-row{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;}.meta-item{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;}.meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--cyan)}
+.role-badge{display:inline-flex;align-items:center;gap:8px;background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.25);border-radius:6px;padding:8px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--cyan);}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;}.metric-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;}.metric-val{font-family:var(--display);font-size:24px;font-weight:800;color:var(--green);line-height:1;margin-bottom:4px;}.metric-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.section{margin-bottom:52px;}.section-title{font-family:var(--display);font-size:20px;font-weight:700;color:#fff;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}.section-title .num{font-family:var(--mono);font-size:12px;color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.2);padding:2px 8px;border-radius:4px;}
+p{color:var(--muted);line-height:1.8;margin-bottom:16px;font-size:15px;}
+.contrib{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:4px;margin-bottom:12px;}.contrib.led{color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.25)}.contrib.contributed{color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)}.contrib.supported{color:var(--muted);background:rgba(122,139,168,0.1);border:1px solid rgba(122,139,168,0.2)}
+.arch-flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:24px 0;}.arch-node{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;min-width:100px;transition:border-color 0.3s;}.arch-node:hover{border-color:var(--cyan)}.arch-node .an-icon{font-size:18px;margin-bottom:4px;}.arch-node .an-label{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--cyan);text-transform:uppercase;}.arch-node .an-sub{font-size:11px;color:var(--muted);margin-top:2px;}.arch-arrow{color:var(--cyan);font-size:16px;padding:0 4px;opacity:0.5;}
+.code-wrap{margin:20px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border);}.code-header{background:var(--surface);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}.code-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);}.code-disclaimer{font-family:var(--mono);font-size:9px;color:var(--muted);}
+pre{background:#0A1525;padding:20px;overflow-x:auto;margin:0;}code{font-family:var(--mono);font-size:12px;line-height:1.7;color:#CBD5E1;}.kw{color:#22D3EE}.fn{color:#60A5FA}.cm{color:#475569;font-style:italic}.str{color:#34D399}.tp{color:#A78BFA}.nb{color:#F59E0B}
+.info-box{border-left:3px solid var(--cyan);background:var(--cyan-dim);border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;}.info-box.amber{border-left-color:var(--amber);background:rgba(245,158,11,0.08);}.info-box.green{border-left-color:var(--green);background:rgba(52,211,153,0.08);}.info-box-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px;}.info-box.amber .info-box-title{color:var(--amber)}.info-box.green .info-box-title{color:var(--green)}.info-box p{margin:0;font-size:13px;}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;}.result-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;border-top:3px solid var(--green);}.result-val{font-family:var(--display);font-size:26px;font-weight:800;color:var(--green);margin-bottom:6px;}.result-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.bottom-nav{display:flex;justify-content:space-between;align-items:center;margin-top:60px;padding-top:32px;border-top:1px solid var(--border);}.btn-nav{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:12px 20px;border-radius:6px;text-decoration:none;transition:all 0.2s;}.btn-nav.primary{background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.3);color:var(--cyan);}.btn-nav.primary:hover{background:rgba(34,211,238,0.2)}.btn-nav.secondary{background:var(--card);border:1px solid var(--border);color:var(--muted);}.btn-nav.secondary:hover{color:var(--cyan);border-color:var(--cyan)}
+footer{border-top:1px solid var(--border);padding:28px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto;}.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}.footer-brand{font-family:var(--mono);font-size:12px;color:var(--muted);}.footer-brand span{color:var(--cyan)}.footer-links{display:flex;gap:20px;}.footer-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}.footer-links a:hover{color:var(--cyan)}
+.fade{opacity:0;transform:translateY(16px);transition:opacity 0.5s,transform 0.5s}.fade.visible{opacity:1;transform:none}
+ul.detail{color:var(--muted);padding-left:20px;line-height:2.1;font-size:14px;margin-bottom:16px;}ul.detail li strong{color:var(--cyan)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:32px 0 60px}.metrics-row{grid-template-columns:1fr 1fr}.results-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="back-bar">
+  <div class="back-bar-inner">
+    <a href="https://mattibalcha.github.io" class="back-link"><span class="arrow">←</span> mattibalcha.github.io</a>
+    <div class="breadcrumb"><span>Matti Balcha</span><span class="sep">/</span><a href="index.html" style="color:var(--muted);text-decoration:none">Portfolio</a><span class="sep">/</span><span class="current">Azure Migration</span></div>
+  </div>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-label">Navigate</div>
+    <nav class="sb-nav">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#phase1">Phase 1 — SSMA Assessment</a>
+      <a href="#phase2">Phase 2 — Deduplicate</a>
+      <a href="#phase3">Phase 3 — ETL Quality Gates</a>
+      <a href="#phase4">Phase 4 — Azure Monitoring</a>
+      <a href="#results">Results</a>
+    </nav>
+    <div class="sb-label">Key Metrics</div>
+    <div class="sb-metrics">
+      <div class="sb-metric"><div class="sb-metric-val">−15%</div><div class="sb-metric-label">Infra Cost</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">+50%</div><div class="sb-metric-label">Accuracy</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">+15%</div><div class="sb-metric-label">Query Perf</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">150</div><div class="sb-metric-label">Dupes Removed</div></div>
+    </div>
+  </aside>
+  <main class="main">
+    <div id="overview" class="hero-section fade">
+      <div class="eyebrow">Laureate Education · Aug 2024 – Present</div>
+      <h1>Azure SQL Migration &amp;<br><em>Data Governance Initiative</em></h1>
+      <div class="meta-row">
+        <div class="meta-item"><div class="dot"></div>Columbia, MD</div>
+        <div class="meta-item"><div class="dot"></div>MS SQL Server / SSIS Developer</div>
+        <div class="meta-item"><div class="dot"></div>Aug 2024 – Present</div>
+      </div>
+      <div class="role-badge">&#9729; My Role: SQL/SSIS Developer &amp; Data Governance Contributor</div>
+      <div class="metrics-row">
+        <div class="metric-box"><div class="metric-val">−15%</div><div class="metric-label">Infra Cost</div></div>
+        <div class="metric-box"><div class="metric-val">+50%</div><div class="metric-label">Data Accuracy</div></div>
+        <div class="metric-box"><div class="metric-val">+15%</div><div class="metric-label">Query Performance</div></div>
+        <div class="metric-box"><div class="metric-val">150</div><div class="metric-label">Dupes Removed</div></div>
+      </div>
+    </div>
+    <div class="section fade">
+      <p>Laureate Education needed to modernize its Student Management System database infrastructure — moving from on-premises SQL Server to Azure SQL for improved scalability, cost efficiency, and operational posture. Running in parallel was a data governance initiative to improve data accuracy across departments, which had suffered from duplicate records and inconsistent ETL validation controls.</p><p>My contributions spanned the full lifecycle: SSMA-based compatibility assessment, schema changes for Azure SQL readiness, hands-on duplicate record remediation (150 records removed), ETL quality gate implementation, and post-migration monitoring setup. The data governance work contributed to a 50% improvement in data accuracy across departments.</p>
+    </div>
+    <div id="architecture" class="section fade">
+      <div class="section-title"><span class="num">01</span> Architecture</div>
+      <div class="arch-flow"><div class="arch-node"><div class="an-icon">🖥️</div><div class="an-label">On-Prem SMS</div><div class="an-sub">SQL Server DB</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">🔍</div><div class="an-label">SSMA</div><div class="an-sub">Compatibility scan</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">⚙️</div><div class="an-label">Schema Fix</div><div class="an-sub">Datatype + index</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">☁️</div><div class="an-label">Azure SQL</div><div class="an-sub">Managed DB</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">📊</div><div class="an-label">Monitoring</div><div class="an-sub">Query Store</div></div></div>
+      <div class="info-box"><div class="info-box-title">Design Context</div><p>The migration was executed as a controlled pilot — assess, remediate, migrate pilot scope, validate, then extend. Data governance controls (ETL quality gates + dedupe) ran in parallel to ensure the migrated data was clean, not just moved.</p></div>
+    </div>
+
+    <div id="phase1" class="section fade">
+      <div class="section-title"><span class="num">02</span> Phase 1 — SMS Compatibility Assessment (SSMA)</div>
+      <div class="contrib contributed">◈ Contributed — Assessment Workstream</div>
+      <p>I used SQL Server Migration Assistant (SSMA) to run a compatibility assessment on the Student Management System database — cataloging unsupported features, T-SQL syntax differences, cross-database dependencies, and any objects that would need remediation before Azure SQL migration. Issues were triaged into Must-Fix, Should-Fix, and Can-Defer categories.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Pre-Migration Compatibility Checks</span><span class="code-disclaimer">Simulated pattern — no proprietary code</span></div>
+        <pre><code><span class="cm">-- Check for datatype drift that would need conversion</span>
+<span class="kw">SELECT</span> t.name <span class="kw">AS</span> TableName, c.name <span class="kw">AS</span> ColName, tp.name <span class="kw">AS</span> DataType
+<span class="kw">FROM</span> sys.columns c
+<span class="kw">JOIN</span> sys.tables t <span class="kw">ON</span> t.object_id = c.object_id
+<span class="kw">JOIN</span> sys.types tp <span class="kw">ON</span> tp.user_type_id = c.user_type_id
+<span class="kw">WHERE</span> tp.name <span class="kw">IN</span> (<span class="str">'text'</span>,<span class="str">'ntext'</span>,<span class="str">'image'</span>)  <span class="cm">-- legacy types incompatible</span>
+<span class="kw">ORDER BY</span> t.name;
+
+<span class="cm">-- Detect truncation risk before VARCHAR conversion</span>
+<span class="kw">SELECT TOP</span> <span class="nb">50</span> *
+<span class="kw">FROM</span> dbo.Student
+<span class="kw">WHERE</span> <span class="fn">LEN</span>(Notes) > <span class="nb">4000</span>; <span class="cm">-- exceeds target column size</span></code></pre>
+      </div>
+    </div>
+    <div id="phase2" class="section fade">
+      <div class="section-title"><span class="num">03</span> Phase 2 — Duplicate Student Record Cleanup</div>
+      <div class="contrib led">✦ I Directly Built &amp; Executed This</div>
+      <p>SMS data had 150 duplicate student records — caused by data entry inconsistencies and system migration artifacts. I developed T-SQL scripts to detect them using a match-key approach, produced a review list for business sign-off, then executed a controlled archive-before-delete workflow.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Duplicate Detection &amp; Controlled Cleanup</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- Step 1: Find duplicates using match key</span>
+<span class="kw">WITH</span> Candidates <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> StudentID,
+    <span class="fn">LOWER</span>(<span class="fn">LTRIM</span>(<span class="fn">RTRIM</span>(FirstName))) <span class="kw">AS</span> fn,
+    <span class="fn">LOWER</span>(<span class="fn">LTRIM</span>(<span class="fn">RTRIM</span>(LastName)))  <span class="kw">AS</span> ln,
+    DOB, Email, CreatedDate,
+    <span class="fn">ROW_NUMBER</span>() <span class="kw">OVER</span> (
+      <span class="kw">PARTITION BY</span> <span class="fn">LOWER</span>(<span class="fn">LTRIM</span>(<span class="fn">RTRIM</span>(FirstName))),
+                   <span class="fn">LOWER</span>(<span class="fn">LTRIM</span>(<span class="fn">RTRIM</span>(LastName))), DOB, Email
+      <span class="kw">ORDER BY</span> CreatedDate <span class="kw">DESC</span>
+    ) <span class="kw">AS</span> rn
+  <span class="kw">FROM</span> dbo.Student
+)
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> Candidates <span class="kw">WHERE</span> rn > <span class="nb">1</span>;  <span class="cm">-- review list</span>
+
+<span class="cm">-- Step 2: Archive before delete (safety first)</span>
+<span class="kw">BEGIN TRAN</span>;
+  <span class="kw">INSERT INTO</span> dbo.Student_DedupeArchive (StudentID, ArchivedAt)
+  <span class="kw">SELECT</span> StudentID, <span class="fn">SYSUTCDATETIME</span>()
+  <span class="kw">FROM</span> Candidates <span class="kw">WHERE</span> rn > <span class="nb">1</span>;
+
+  <span class="kw">DELETE</span> s <span class="kw">FROM</span> dbo.Student s
+  <span class="kw">JOIN</span> Candidates c <span class="kw">ON</span> c.StudentID = s.StudentID <span class="kw">AND</span> c.rn > <span class="nb">1</span>;
+<span class="kw">COMMIT TRAN</span>;</code></pre>
+      </div>
+      <div class="info-box green">
+        <div class="info-box-title">Result</div>
+        <p>150 duplicate student records removed. Archive table preserved all removed records for 90-day review window before permanent disposal per data retention policy.</p>
+      </div>
+    </div>
+    <div id="phase3" class="section fade">
+      <div class="section-title"><span class="num">04</span> Phase 3 — ETL Quality Gates &amp; Data Governance</div>
+      <div class="contrib led">✦ I Directly Built This</div>
+      <p>One-time cleanup fixes the past. ETL quality gates prevent recurrence. I embedded validation rules inside SSIS pipelines: completeness checks, domain validation, uniqueness checks, and referential integrity — with bad rows quarantined to a reject table with reason codes rather than silently loaded.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — ETL Quality Gate Schema &amp; Validation Rules</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- Reject table: makes quality issues measurable</span>
+<span class="kw">CREATE TABLE</span> dbo.ETL_Rejects (
+  RejectID    <span class="tp">bigint</span> <span class="kw">IDENTITY</span>(1,1) <span class="kw">PRIMARY KEY</span>,
+  EntityName  <span class="tp">nvarchar</span>(50),
+  NaturalKey  <span class="tp">nvarchar</span>(200),
+  RejectReason <span class="tp">nvarchar</span>(200),
+  LoadBatchID <span class="tp">nvarchar</span>(50),
+  RejectedAt  <span class="tp">datetime2</span> <span class="kw">DEFAULT</span> <span class="fn">SYSUTCDATETIME</span>()
+);
+
+<span class="cm">-- Validation: student must have valid active email</span>
+<span class="kw">INSERT INTO</span> dbo.ETL_Rejects(EntityName,NaturalKey,RejectReason,LoadBatchID)
+<span class="kw">SELECT</span> <span class="str">'Student'</span>, <span class="kw">CAST</span>(StudentID <span class="kw">AS</span> <span class="tp">nvarchar</span>), <span class="str">'Missing primary email'</span>, <span class="nb">@BatchID</span>
+<span class="kw">FROM</span> stg.Student
+<span class="kw">WHERE</span> PrimaryEmail <span class="kw">IS NULL OR</span> <span class="fn">LEN</span>(PrimaryEmail) &lt; <span class="nb">5</span>;
+
+<span class="cm">-- Validation: DOB must be realistic</span>
+<span class="kw">INSERT INTO</span> dbo.ETL_Rejects(EntityName,NaturalKey,RejectReason,LoadBatchID)
+<span class="kw">SELECT</span> <span class="str">'Student'</span>, <span class="kw">CAST</span>(StudentID <span class="kw">AS</span> <span class="tp">nvarchar</span>), <span class="str">'Invalid DOB'</span>, <span class="nb">@BatchID</span>
+<span class="kw">FROM</span> stg.Student
+<span class="kw">WHERE</span> DOB > <span class="fn">DATEADD</span>(<span class="fn">year</span>, -<span class="nb">10</span>, <span class="fn">GETDATE</span>())
+   <span class="kw">OR</span> DOB &lt; <span class="fn">DATEADD</span>(<span class="fn">year</span>, -<span class="nb">100</span>, <span class="fn">GETDATE</span>());</code></pre>
+      </div>
+    </div>
+    <div id="phase4" class="section fade">
+      <div class="section-title"><span class="num">05</span> Phase 4 — Azure SQL Monitoring Setup</div>
+      <div class="contrib led">✦ I Directly Implemented This</div>
+      <p>Post-migration, I configured monitoring baselines in Azure SQL — top query performance, DTU/vCore utilization, storage trends, and blocking indicators. These baselines feed the next optimization wave and provide proof that the migration didn't regress performance.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Azure SQL Performance Baseline Queries</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- Top CPU queries (Azure SQL DMV pattern)</span>
+<span class="kw">SELECT TOP</span> <span class="nb">25</span>
+  qs.total_worker_time / <span class="fn">NULLIF</span>(qs.execution_count,<span class="nb">0</span>) <span class="kw">AS</span> avg_cpu,
+  qs.execution_count,
+  qs.total_logical_reads / <span class="fn">NULLIF</span>(qs.execution_count,<span class="nb">0</span>) <span class="kw">AS</span> avg_reads,
+  <span class="fn">SUBSTRING</span>(st.text,(qs.statement_start_offset/<span class="nb">2</span>)+<span class="nb">1</span>,
+    ((<span class="kw">CASE</span> qs.statement_end_offset <span class="kw">WHEN</span> -<span class="nb">1</span> <span class="kw">THEN</span> <span class="fn">DATALENGTH</span>(st.text)
+      <span class="kw">ELSE</span> qs.statement_end_offset <span class="kw">END</span> - qs.statement_start_offset)/<span class="nb">2</span>)+<span class="nb">1</span>) <span class="kw">AS</span> stmt
+<span class="kw">FROM</span> sys.dm_exec_query_stats qs
+<span class="kw">CROSS APPLY</span> sys.<span class="fn">dm_exec_sql_text</span>(qs.sql_handle) st
+<span class="kw">ORDER BY</span> avg_cpu <span class="kw">DESC</span>;
+
+<span class="cm">-- Storage growth trend (capacity planning)</span>
+<span class="kw">SELECT</span> name, type_desc, size * <span class="nb">8</span> / <span class="nb">1024.0</span> <span class="kw">AS</span> SizeMB
+<span class="kw">FROM</span> sys.database_files
+<span class="kw">ORDER BY</span> SizeMB <span class="kw">DESC</span>;</code></pre>
+      </div>
+    </div>
+    <div id="results" class="section fade">
+      <div class="section-title"><span class="num">06</span> Results</div>
+      <div class="results-grid">
+        <div class="result-card"><div class="result-val">−15%</div><div class="result-desc">Infrastructure cost reduction through Azure SQL migration and right-sized managed service tier</div></div>
+        <div class="result-card"><div class="result-val">+50%</div><div class="result-desc">Data accuracy improvement across departments through governance initiative and embedded ETL quality gates</div></div>
+        <div class="result-card"><div class="result-val">+15%</div><div class="result-desc">Query performance gain from SMS Azure SQL compatibility work and schema optimization</div></div>
+        <div class="result-card"><div class="result-val">150</div><div class="result-desc">Duplicate student records removed with archive-before-delete workflow and business sign-off</div></div>
+        <div class="result-card"><div class="result-val">−20%</div><div class="result-desc">Processing time reduction through Python-assisted Query Store telemetry analysis and tuning</div></div>
+        <div class="result-card"><div class="result-val">Sustained</div><div class="result-desc">Quality improvements — ETL quality gates prevent recurrence of data issues, not just one-time cleanup</div></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav fade">
+      <a href="index.html" class="btn-nav primary">← All Projects</a>
+      <a href="https://mattibalcha.github.io" class="btn-nav secondary">Main Site →</a>
+    </div>
+  </main>
+</div>
+<footer><div class="footer-inner"><div class="footer-brand">matti<span>.balcha</span> // azure migration &amp; governance</div><div class="footer-links"><a href="index.html">Portfolio</a><a href="https://mattibalcha.github.io">Main Site</a><a href="https://linkedin.com/in/mattibalcha">LinkedIn</a></div></div></footer>
+<script>
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.07});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+const navLinks=document.querySelectorAll('.sb-nav a');
+const sections=[...document.querySelectorAll('[id]')];
+window.addEventListener('scroll',()=>{let cur='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id});navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur))});
+</script>
+</body>
+</html>

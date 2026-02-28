@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Credit Risk BI Dashboards & SSAS Modeling | Matti Balcha Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080E1E;--surface:#0D1628;--card:#111D35;--border:#1A2B4A;--cyan:#22D3EE;--cyan-dim:rgba(34,211,238,0.10);--green:#34D399;--amber:#F59E0B;--text:#E2E8F0;--muted:#7A8BA8;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(34,211,238,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.02) 1px,transparent 1px);background-size:48px 48px;}
+.back-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,14,30,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;}
+.back-bar-inner{max-width:1200px;margin:0 auto;padding:0 24px;width:100%;display:flex;align-items:center;justify-content:space-between;}
+.back-link{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}.back-link:hover{color:var(--cyan)}.back-link .arrow{color:var(--cyan)}
+.breadcrumb{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;}.breadcrumb .sep{color:var(--border)}.breadcrumb .current{color:var(--cyan)}
+.layout{display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1200px;margin:0 auto;padding:0 24px;min-height:100vh;padding-top:52px;}
+.sidebar{position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;padding:32px 24px 32px 0;border-right:1px solid var(--border);}
+.sb-label{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:20px;}.sb-label:first-child{margin-top:0}
+.sb-nav a{display:block;font-family:var(--mono);font-size:11px;padding:7px 12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:all 0.2s;border-radius:0 4px 4px 0;margin-bottom:2px;}.sb-nav a:hover,.sb-nav a.active{color:var(--cyan);border-left-color:var(--cyan);background:var(--cyan-dim);}
+.sb-metrics{display:flex;flex-direction:column;gap:8px;margin-top:12px;}.sb-metric{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}.sb-metric-val{font-family:var(--display);font-size:20px;font-weight:800;color:var(--cyan);line-height:1;}.sb-metric-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.main{padding:48px 0 80px 48px;position:relative;z-index:1;}
+.hero-section{padding-bottom:40px;border-bottom:1px solid var(--border);margin-bottom:40px;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:12px;}.eyebrow::before{content:'';width:28px;height:1px;background:var(--cyan)}
+h1{font-family:var(--display);font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.15;color:#fff;margin-bottom:16px;letter-spacing:-0.02em;}h1 em{color:var(--cyan);font-style:normal}
+.meta-row{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;}.meta-item{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;}.meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--cyan)}
+.role-badge{display:inline-flex;align-items:center;gap:8px;background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.25);border-radius:6px;padding:8px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--cyan);}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;}.metric-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;}.metric-val{font-family:var(--display);font-size:24px;font-weight:800;color:var(--green);line-height:1;margin-bottom:4px;}.metric-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.section{margin-bottom:52px;}.section-title{font-family:var(--display);font-size:20px;font-weight:700;color:#fff;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}.section-title .num{font-family:var(--mono);font-size:12px;color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.2);padding:2px 8px;border-radius:4px;}
+p{color:var(--muted);line-height:1.8;margin-bottom:16px;font-size:15px;}
+.contrib{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:4px;margin-bottom:12px;}.contrib.led{color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.25)}.contrib.contributed{color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)}.contrib.supported{color:var(--muted);background:rgba(122,139,168,0.1);border:1px solid rgba(122,139,168,0.2)}
+.arch-flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:24px 0;}.arch-node{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;min-width:100px;transition:border-color 0.3s;}.arch-node:hover{border-color:var(--cyan)}.arch-node .an-icon{font-size:18px;margin-bottom:4px;}.arch-node .an-label{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--cyan);text-transform:uppercase;}.arch-node .an-sub{font-size:11px;color:var(--muted);margin-top:2px;}.arch-arrow{color:var(--cyan);font-size:16px;padding:0 4px;opacity:0.5;}
+.code-wrap{margin:20px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border);}.code-header{background:var(--surface);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}.code-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);}.code-disclaimer{font-family:var(--mono);font-size:9px;color:var(--muted);}
+pre{background:#0A1525;padding:20px;overflow-x:auto;margin:0;}code{font-family:var(--mono);font-size:12px;line-height:1.7;color:#CBD5E1;}.kw{color:#22D3EE}.fn{color:#60A5FA}.cm{color:#475569;font-style:italic}.str{color:#34D399}.tp{color:#A78BFA}.nb{color:#F59E0B}
+.info-box{border-left:3px solid var(--cyan);background:var(--cyan-dim);border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;}.info-box.amber{border-left-color:var(--amber);background:rgba(245,158,11,0.08);}.info-box.green{border-left-color:var(--green);background:rgba(52,211,153,0.08);}.info-box-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px;}.info-box.amber .info-box-title{color:var(--amber)}.info-box.green .info-box-title{color:var(--green)}.info-box p{margin:0;font-size:13px;}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;}.result-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;border-top:3px solid var(--green);}.result-val{font-family:var(--display);font-size:26px;font-weight:800;color:var(--green);margin-bottom:6px;}.result-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.bottom-nav{display:flex;justify-content:space-between;align-items:center;margin-top:60px;padding-top:32px;border-top:1px solid var(--border);}.btn-nav{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:12px 20px;border-radius:6px;text-decoration:none;transition:all 0.2s;}.btn-nav.primary{background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.3);color:var(--cyan);}.btn-nav.primary:hover{background:rgba(34,211,238,0.2)}.btn-nav.secondary{background:var(--card);border:1px solid var(--border);color:var(--muted);}.btn-nav.secondary:hover{color:var(--cyan);border-color:var(--cyan)}
+footer{border-top:1px solid var(--border);padding:28px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto;}.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}.footer-brand{font-family:var(--mono);font-size:12px;color:var(--muted);}.footer-brand span{color:var(--cyan)}.footer-links{display:flex;gap:20px;}.footer-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}.footer-links a:hover{color:var(--cyan)}
+.fade{opacity:0;transform:translateY(16px);transition:opacity 0.5s,transform 0.5s}.fade.visible{opacity:1;transform:none}
+ul.detail{color:var(--muted);padding-left:20px;line-height:2.1;font-size:14px;margin-bottom:16px;}ul.detail li strong{color:var(--cyan)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:32px 0 60px}.metrics-row{grid-template-columns:1fr 1fr}.results-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="back-bar">
+  <div class="back-bar-inner">
+    <a href="https://mattibalcha.github.io" class="back-link"><span class="arrow">←</span> mattibalcha.github.io</a>
+    <div class="breadcrumb"><span>Matti Balcha</span><span class="sep">/</span><a href="index.html" style="color:var(--muted);text-decoration:none">Portfolio</a><span class="sep">/</span><span class="current">BI Dashboards</span></div>
+  </div>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-label">Navigate</div>
+    <nav class="sb-nav">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#phase1">Phase 1 — KPI Design</a>
+      <a href="#phase2">Phase 2 — SSAS Model</a>
+      <a href="#phase3">Phase 3 — Power BI</a>
+      <a href="#phase4">Phase 4 — Validation</a>
+      <a href="#results">Results</a>
+    </nav>
+    <div class="sb-label">Key Metrics</div>
+    <div class="sb-metrics">
+      <div class="sb-metric"><div class="sb-metric-val">+20%</div><div class="sb-metric-label">BI Accuracy</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">+25%</div><div class="sb-metric-label">Anomaly Detection</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">15+</div><div class="sb-metric-label">BUs Served</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">10M+</div><div class="sb-metric-label">Records</div></div>
+    </div>
+  </aside>
+  <main class="main">
+    <div id="overview" class="hero-section fade">
+      <div class="eyebrow">Capital One · Nov 2022 – Jul 2024</div>
+      <h1>Credit Risk BI Dashboards<br>&amp; <em>SSAS Semantic Modeling</em></h1>
+      <div class="meta-row">
+        <div class="meta-item"><div class="dot"></div>Richmond, VA (Hybrid)</div>
+        <div class="meta-item"><div class="dot"></div>SQL / ETL / BI Specialist</div>
+        <div class="meta-item"><div class="dot"></div>~20 Months</div>
+      </div>
+      <div class="role-badge">&#128202; My Role: BI Developer &amp; Semantic Model Contributor</div>
+      <div class="metrics-row">
+        <div class="metric-box"><div class="metric-val">+20%</div><div class="metric-label">BI Accuracy</div></div>
+        <div class="metric-box"><div class="metric-val">+25%</div><div class="metric-label">Anomaly Detection</div></div>
+        <div class="metric-box"><div class="metric-val">+20%</div><div class="metric-label">Risk Monitoring</div></div>
+        <div class="metric-box"><div class="metric-val">10M+</div><div class="metric-label">Records</div></div>
+      </div>
+    </div>
+    <div class="section fade">
+      <p>Credit risk teams need trusted, consistent KPIs — default rates, exposure by segment, risk score distribution — and the ability to drill from portfolio level down to individual loan detail without manual data pulls. This project delivered a complete BI stack: SSAS semantic model, Power BI dashboards, and SSRS paginated compliance outputs, all backed by validated measures that reconciled to the same SQL source of truth.</p><p>My contributions spanned semantic modeling, DAX measure development, Power Query standardization, and reconciliation validation. I worked closely with the Power BI team and stakeholders to ensure the dashboards answered real operational questions, not just displayed data.</p>
+    </div>
+    <div id="architecture" class="section fade">
+      <div class="section-title"><span class="num">01</span> Architecture</div>
+      <div class="arch-flow"><div class="arch-node"><div class="an-icon">🗄️</div><div class="an-label">Warehouse</div><div class="an-sub">Fact + Dim tables</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">📐</div><div class="an-label">SSAS Model</div><div class="an-sub">Tabular / MD</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">📊</div><div class="an-label">Power BI</div><div class="an-sub">Live dashboards</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">📄</div><div class="an-label">SSRS</div><div class="an-sub">Compliance reports</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">👥</div><div class="an-label">15+ BUs</div><div class="an-sub">Reporting consumers</div></div></div>
+      <div class="info-box"><div class="info-box-title">Design Context</div><p>The SSAS semantic model was the single source of truth for all KPI definitions. Both Power BI (interactive) and SSRS (paginated) connected to the same model, ensuring consistency across all consumers.</p></div>
+    </div>
+
+    <div id="phase1" class="section fade">
+      <div class="section-title"><span class="num">02</span> Phase 1 — KPI Definition &amp; Semantic Layer Design</div>
+      <div class="contrib contributed">◈ Contributed — Collaborated with BI Team</div>
+      <p>Before building any visuals, I worked with stakeholders to lock down KPI definitions — the exact numerator/denominator logic for default rate, the risk band thresholds, the time grain for trend analysis. Undefined or inconsistent metrics cause "dashboard wars" where different teams report different numbers from the same data.</p>
+      <ul class="detail">
+        <li><strong>Default Rate (%)</strong> — confirmed as (loans with 90+ day delinquency) / (total active loans) at month-end grain</li>
+        <li><strong>Risk Exposure</strong> — sum of outstanding balances in High/Very High risk bands</li>
+        <li><strong>Score Distribution</strong> — segmented into 4 standard credit score bands (Poor/Fair/Good/Very Good)</li>
+        <li><strong>Anomaly Indicator</strong> — segment whose default rate exceeds portfolio average by &gt;30%</li>
+      </ul>
+    </div>
+    <div id="phase2" class="section fade">
+      <div class="section-title"><span class="num">03</span> Phase 2 — SSAS Cube / Tabular Model</div>
+      <div class="contrib led">✦ I Directly Worked On This</div>
+      <p>Built SSAS dimensions and hierarchies that support multi-level risk analysis. Geography hierarchy (Region → State), Demographics (Age Band / Income Band / Score Band), Loan Type hierarchy, and Time (Date → Month → Quarter → Year). Calculated measures and KPIs sat in the semantic layer — one source of truth that feeds both Power BI and SSRS.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">DAX Measures — Power BI / Tabular Model</span><span class="code-disclaimer">Simulated pattern — no proprietary code</span></div>
+        <pre><code><span class="cm">-- Total and defaulted loan counts</span>
+Total Loans <span class="kw">:=</span>
+<span class="fn">DISTINCTCOUNT</span>( Loans[Loan_ID] )
+
+Defaulted Loans <span class="kw">:=</span>
+<span class="fn">CALCULATE</span>(
+    <span class="fn">DISTINCTCOUNT</span>( Loans[Loan_ID] ),
+    Loans[Default_Flag] = <span class="nb">1</span>
+)
+
+<span class="cm">-- Default Rate %</span>
+Default Rate % <span class="kw">:=</span>
+<span class="fn">DIVIDE</span>( [Defaulted Loans], [Total Loans] )
+
+<span class="cm">-- Risk exposure in high-risk bands</span>
+Risk Exposure <span class="kw">:=</span>
+<span class="fn">CALCULATE</span>(
+    <span class="fn">SUM</span>( Loans[Outstanding_Balance] ),
+    Loans[Risk_Band] <span class="kw">IN</span> { <span class="str">"High"</span>, <span class="str">"Very High"</span> }
+)
+
+<span class="cm">-- 3-Month rolling average default rate</span>
+Rolling 3M Default Rate <span class="kw">:=</span>
+<span class="fn">CALCULATE</span>(
+    [Default Rate %],
+    <span class="fn">DATESINPERIOD</span>( DimDate[Date], <span class="fn">LASTDATE</span>(DimDate[Date]), <span class="kw">-3</span>, <span class="fn">MONTH</span> )
+)
+
+<span class="cm">-- High-risk segment flag (30% above portfolio average)</span>
+High Risk Segment <span class="kw">:=</span>
+<span class="fn">IF</span>( [Default Rate %] > [Default Rate %] * <span class="nb">1.3</span>, <span class="str">"High Risk"</span>, <span class="str">"Normal"</span> )</code></pre>
+      </div>
+    </div>
+    <div id="phase3" class="section fade">
+      <div class="section-title"><span class="num">04</span> Phase 3 — Power BI Dashboard Build</div>
+      <div class="contrib contributed">◈ Contributed — Collaborated with Power BI Team</div>
+      <p>Dashboard pages were organized by analytical persona. Executive overview for KPI monitoring, analyst investigation for drill-down, and compliance summary for scheduled regulatory outputs. I contributed to data model design, measure validation, and refresh configuration.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">Power Query M — Score Banding &amp; Standardization</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="kw">let</span>
+  Source = Sql.Database(<span class="str">"SERVER"</span>, <span class="str">"CreditRiskDB"</span>),
+  Loans = Source{[Schema=<span class="str">"dbo"</span>,Item=<span class="str">"Loans"</span>]}[Data],
+  Cleaned = Table.TransformColumns(Loans, {{<span class="str">"Region"</span>, Text.Trim, type text}}),
+  ScoreBand = Table.AddColumn(Cleaned, <span class="str">"Score_Band"</span>, each
+      <span class="kw">if</span> [Credit_Score] &lt; <span class="nb">580</span> <span class="kw">then</span> <span class="str">"Poor"</span>
+      <span class="kw">else if</span> [Credit_Score] &lt; <span class="nb">670</span> <span class="kw">then</span> <span class="str">"Fair"</span>
+      <span class="kw">else if</span> [Credit_Score] &lt; <span class="nb">740</span> <span class="kw">then</span> <span class="str">"Good"</span>
+      <span class="kw">else</span> <span class="str">"Very Good"</span>
+  , type text)
+<span class="kw">in</span>
+  ScoreBand</code></pre>
+      </div>
+      <div class="info-box">
+        <div class="info-box-title">Why 25% Faster Anomaly Detection</div>
+        <p>Consistent cube-backed measures + drill-through from portfolio to segment to loan level reduced the time between "I see something wrong" and "I know which segment and why" from hours to minutes. That operational speed improvement is what the 25% metric reflects.</p>
+      </div>
+    </div>
+    <div id="phase4" class="section fade">
+      <div class="section-title"><span class="num">05</span> Phase 4 — Validation &amp; Reconciliation</div>
+      <div class="contrib led">✦ I Directly Worked On This</div>
+      <p>Every key measure was reconciled back to SQL base tables before any dashboard was marked production-ready. This is what "20% improved BI accuracy" means — not a guess, but a closed loop between the semantic model and the source-of-truth data.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Dashboard Reconciliation Pattern</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- Reconcile default rate between dashboard and base tables</span>
+<span class="kw">SELECT</span>
+  <span class="kw">CAST</span>(<span class="fn">SUM</span>(<span class="kw">CASE WHEN</span> Default_Flag = <span class="nb">1</span> <span class="kw">THEN</span> <span class="nb">1</span> <span class="kw">ELSE</span> <span class="nb">0</span> <span class="kw">END</span>) <span class="kw">AS</span> <span class="tp">float</span>) /
+  <span class="fn">NULLIF</span>(<span class="fn">COUNT</span>(*), <span class="nb">0</span>)                 <span class="kw">AS</span> DefaultRate,
+  <span class="fn">SUM</span>(Outstanding_Balance)             <span class="kw">AS</span> TotalExposure,
+  <span class="fn">AVG</span>(<span class="kw">CAST</span>(Credit_Score <span class="kw">AS</span> <span class="tp">float</span>))  <span class="kw">AS</span> AvgScore
+<span class="kw">FROM</span> dbo.Loans
+<span class="kw">WHERE</span> ReportMonth = <span class="nb">@ReportMonth</span>;</code></pre>
+      </div>
+    </div>
+    <div id="results" class="section fade">
+      <div class="section-title"><span class="num">06</span> Results</div>
+      <div class="results-grid">
+        <div class="result-card"><div class="result-val">+20%</div><div class="result-desc">BI accuracy improvement — consistent semantic layer eliminated metric discrepancies across teams</div></div>
+        <div class="result-card"><div class="result-val">+25%</div><div class="result-desc">Faster anomaly detection — cube-backed drill-through reduced investigation time from hours to minutes</div></div>
+        <div class="result-card"><div class="result-val">+20%</div><div class="result-desc">Enhanced real-time risk monitoring through reliable near-real-time Power BI refresh and alerting</div></div>
+        <div class="result-card"><div class="result-val">15+</div><div class="result-desc">Business units served through automated SSRS compliance reports and shared Power BI workspaces</div></div>
+        <div class="result-card"><div class="result-val">Zero</div><div class="result-desc">Numbers conflicts — all KPIs defined in single semantic layer, reconciled against SQL source data</div></div>
+        <div class="result-card"><div class="result-val">10M+</div><div class="result-desc">Records underpinning the semantic model, processed daily through validated SSIS pipelines</div></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav fade">
+      <a href="index.html" class="btn-nav primary">← All Projects</a>
+      <a href="https://mattibalcha.github.io" class="btn-nav secondary">Main Site →</a>
+    </div>
+  </main>
+</div>
+<footer><div class="footer-inner"><div class="footer-brand">matti<span>.balcha</span> // bi dashboards &amp; ssas</div><div class="footer-links"><a href="index.html">Portfolio</a><a href="https://mattibalcha.github.io">Main Site</a><a href="https://linkedin.com/in/mattibalcha">LinkedIn</a></div></div></footer>
+<script>
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.07});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+const navLinks=document.querySelectorAll('.sb-nav a');
+const sections=[...document.querySelectorAll('[id]')];
+window.addEventListener('scroll',()=>{let cur='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id});navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur))});
+</script>
+</body>
+</html>

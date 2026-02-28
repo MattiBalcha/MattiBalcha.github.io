@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10M+ Record Migration & Query Performance | Matti Balcha Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#080E1E;--surface:#0D1628;--card:#111D35;--border:#1A2B4A;--cyan:#22D3EE;--cyan-dim:rgba(34,211,238,0.10);--green:#34D399;--amber:#F59E0B;--text:#E2E8F0;--muted:#7A8BA8;--mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}html{scroll-behavior:smooth}body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(34,211,238,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.02) 1px,transparent 1px);background-size:48px 48px;}
+.back-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,14,30,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;}
+.back-bar-inner{max-width:1200px;margin:0 auto;padding:0 24px;width:100%;display:flex;align-items:center;justify-content:space-between;}
+.back-link{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}.back-link:hover{color:var(--cyan)}.back-link .arrow{color:var(--cyan)}
+.breadcrumb{font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px;}.breadcrumb .sep{color:var(--border)}.breadcrumb .current{color:var(--cyan)}
+.layout{display:grid;grid-template-columns:240px 1fr;gap:0;max-width:1200px;margin:0 auto;padding:0 24px;min-height:100vh;padding-top:52px;}
+.sidebar{position:sticky;top:52px;height:calc(100vh - 52px);overflow-y:auto;padding:32px 24px 32px 0;border-right:1px solid var(--border);}
+.sb-label{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;margin-top:20px;}.sb-label:first-child{margin-top:0}
+.sb-nav a{display:block;font-family:var(--mono);font-size:11px;padding:7px 12px;color:var(--muted);text-decoration:none;border-left:2px solid transparent;transition:all 0.2s;border-radius:0 4px 4px 0;margin-bottom:2px;}.sb-nav a:hover,.sb-nav a.active{color:var(--cyan);border-left-color:var(--cyan);background:var(--cyan-dim);}
+.sb-metrics{display:flex;flex-direction:column;gap:8px;margin-top:12px;}.sb-metric{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}.sb-metric-val{font-family:var(--display);font-size:20px;font-weight:800;color:var(--cyan);line-height:1;}.sb-metric-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-top:4px;}
+.main{padding:48px 0 80px 48px;position:relative;z-index:1;}
+.hero-section{padding-bottom:40px;border-bottom:1px solid var(--border);margin-bottom:40px;}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:12px;}.eyebrow::before{content:'';width:28px;height:1px;background:var(--cyan)}
+h1{font-family:var(--display);font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.15;color:#fff;margin-bottom:16px;letter-spacing:-0.02em;}h1 em{color:var(--cyan);font-style:normal}
+.meta-row{display:flex;flex-wrap:wrap;gap:16px;margin-bottom:24px;}.meta-item{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:6px;}.meta-item .dot{width:4px;height:4px;border-radius:50%;background:var(--cyan)}
+.role-badge{display:inline-flex;align-items:center;gap:8px;background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.25);border-radius:6px;padding:8px 16px;font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--cyan);}
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:28px;}.metric-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;}.metric-val{font-family:var(--display);font-size:24px;font-weight:800;color:var(--green);line-height:1;margin-bottom:4px;}.metric-label{font-family:var(--mono);font-size:9px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.section{margin-bottom:52px;}.section-title{font-family:var(--display);font-size:20px;font-weight:700;color:#fff;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;}.section-title .num{font-family:var(--mono);font-size:12px;color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.2);padding:2px 8px;border-radius:4px;}
+p{color:var(--muted);line-height:1.8;margin-bottom:16px;font-size:15px;}
+.contrib{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 12px;border-radius:4px;margin-bottom:12px;}.contrib.led{color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.25)}.contrib.contributed{color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25)}.contrib.supported{color:var(--muted);background:rgba(122,139,168,0.1);border:1px solid rgba(122,139,168,0.2)}
+.arch-flow{display:flex;align-items:center;flex-wrap:wrap;gap:4px;margin:24px 0;}.arch-node{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px;text-align:center;min-width:100px;transition:border-color 0.3s;}.arch-node:hover{border-color:var(--cyan)}.arch-node .an-icon{font-size:18px;margin-bottom:4px;}.arch-node .an-label{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;color:var(--cyan);text-transform:uppercase;}.arch-node .an-sub{font-size:11px;color:var(--muted);margin-top:2px;}.arch-arrow{color:var(--cyan);font-size:16px;padding:0 4px;opacity:0.5;}
+.code-wrap{margin:20px 0;border-radius:8px;overflow:hidden;border:1px solid var(--border);}.code-header{background:var(--surface);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);}.code-label{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);}.code-disclaimer{font-family:var(--mono);font-size:9px;color:var(--muted);}
+pre{background:#0A1525;padding:20px;overflow-x:auto;margin:0;}code{font-family:var(--mono);font-size:12px;line-height:1.7;color:#CBD5E1;}.kw{color:#22D3EE}.fn{color:#60A5FA}.cm{color:#475569;font-style:italic}.str{color:#34D399}.tp{color:#A78BFA}.nb{color:#F59E0B}
+.info-box{border-left:3px solid var(--cyan);background:var(--cyan-dim);border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;}.info-box.amber{border-left-color:var(--amber);background:rgba(245,158,11,0.08);}.info-box.green{border-left-color:var(--green);background:rgba(52,211,153,0.08);}.info-box-title{font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px;}.info-box.amber .info-box-title{color:var(--amber)}.info-box.green .info-box-title{color:var(--green)}.info-box p{margin:0;font-size:13px;}
+.results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px;}.result-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;border-top:3px solid var(--green);}.result-val{font-family:var(--display);font-size:26px;font-weight:800;color:var(--green);margin-bottom:6px;}.result-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+.bottom-nav{display:flex;justify-content:space-between;align-items:center;margin-top:60px;padding-top:32px;border-top:1px solid var(--border);}.btn-nav{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;padding:12px 20px;border-radius:6px;text-decoration:none;transition:all 0.2s;}.btn-nav.primary{background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.3);color:var(--cyan);}.btn-nav.primary:hover{background:rgba(34,211,238,0.2)}.btn-nav.secondary{background:var(--card);border:1px solid var(--border);color:var(--muted);}.btn-nav.secondary:hover{color:var(--cyan);border-color:var(--cyan)}
+footer{border-top:1px solid var(--border);padding:28px 24px;position:relative;z-index:1;max-width:1200px;margin:0 auto;}.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}.footer-brand{font-family:var(--mono);font-size:12px;color:var(--muted);}.footer-brand span{color:var(--cyan)}.footer-links{display:flex;gap:20px;}.footer-links a{font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}.footer-links a:hover{color:var(--cyan)}
+.fade{opacity:0;transform:translateY(16px);transition:opacity 0.5s,transform 0.5s}.fade.visible{opacity:1;transform:none}
+ul.detail{color:var(--muted);padding-left:20px;line-height:2.1;font-size:14px;margin-bottom:16px;}ul.detail li strong{color:var(--cyan)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.sidebar{display:none}.main{padding:32px 0 60px}.metrics-row{grid-template-columns:1fr 1fr}.results-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="back-bar">
+  <div class="back-bar-inner">
+    <a href="https://mattibalcha.github.io" class="back-link"><span class="arrow">←</span> mattibalcha.github.io</a>
+    <div class="breadcrumb"><span>Matti Balcha</span><span class="sep">/</span><a href="index.html" style="color:var(--muted);text-decoration:none">Portfolio</a><span class="sep">/</span><span class="current">Migration & Tuning</span></div>
+  </div>
+</div>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sb-label">Navigate</div>
+    <nav class="sb-nav">
+      <a href="#overview">Overview</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#phase1">Phase 1 — Scope</a>
+      <a href="#phase2">Phase 2 — Batched Load</a>
+      <a href="#phase3">Phase 3 — Validation</a>
+      <a href="#phase4">Phase 4 — Indexing</a>
+      <a href="#phase5">Phase 5 — Query Tuning</a>
+      <a href="#results">Results</a>
+    </nav>
+    <div class="sb-label">Key Metrics</div>
+    <div class="sb-metrics">
+      <div class="sb-metric"><div class="sb-metric-val">10M+</div><div class="sb-metric-label">Records</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">30%</div><div class="sb-metric-label">Query Gain</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">Zero</div><div class="sb-metric-label">Data Loss</div></div>
+      <div class="sb-metric"><div class="sb-metric-val">3</div><div class="sb-metric-label">Validation Layers</div></div>
+    </div>
+  </aside>
+  <main class="main">
+    <div id="overview" class="hero-section fade">
+      <div class="eyebrow">Capital One · 2023 (within Nov 2022 – Jul 2024 engagement)</div>
+      <h1>10M+ Record Migration &amp;<br><em>Query Performance Optimization</em></h1>
+      <div class="meta-row">
+        <div class="meta-item"><div class="dot"></div>Richmond, VA (Hybrid)</div>
+        <div class="meta-item"><div class="dot"></div>SQL / ETL Developer</div>
+        <div class="meta-item"><div class="dot"></div>~2023</div>
+      </div>
+      <div class="role-badge">&#128640; My Role: SQL Performance Engineer &amp; Migration Contributor</div>
+      <div class="metrics-row">
+        <div class="metric-box"><div class="metric-val">10M+</div><div class="metric-label">Records Migrated</div></div>
+        <div class="metric-box"><div class="metric-val">+30%</div><div class="metric-label">Query Performance</div></div>
+        <div class="metric-box"><div class="metric-val">Zero</div><div class="metric-label">Data Loss</div></div>
+        <div class="metric-box"><div class="metric-val">5x</div><div class="metric-label">Subquery Speedup</div></div>
+      </div>
+    </div>
+    <div class="section fade">
+      <p>Migrating 10M+ credit risk records is not a copy-paste operation. Every phase carries risk: data corruption, performance regression, downstream pipeline breakage, and compliance blind spots. My contribution focused on two areas where I had direct ownership: the validation framework that made data integrity provable, and the post-migration performance engineering that produced a 30% query improvement through indexing strategy and execution plan analysis.</p><p>I was part of a larger enterprise migration team — I contributed to and supported the overall effort, and led the SQL tuning and validation workstreams specifically.</p>
+    </div>
+    <div id="architecture" class="section fade">
+      <div class="section-title"><span class="num">01</span> Architecture</div>
+      <div class="arch-flow"><div class="arch-node"><div class="an-icon">🗃️</div><div class="an-label">Source DB</div><div class="an-sub">Legacy schema</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">🔄</div><div class="an-label">Batched ETL</div><div class="an-sub">100K chunks</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">✅</div><div class="an-label">Validation</div><div class="an-sub">3-layer check</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">🗄️</div><div class="an-label">Target DB</div><div class="an-sub">New schema</div></div><div class="arch-arrow">→</div><div class="arch-node"><div class="an-icon">⚡</div><div class="an-label">Post-Migration</div><div class="an-sub">Index + tune</div></div></div>
+      <div class="info-box"><div class="info-box-title">Design Context</div><p>The migration followed a controlled batched pattern with idempotency at each step, followed by a dedicated post-migration performance workstream to restore and improve query performance.</p></div>
+    </div>
+
+    <div id="phase1" class="section fade">
+      <div class="section-title"><span class="num">02</span> Phase 1 — Scope &amp; Success Criteria</div>
+      <div class="contrib contributed">◈ Contributed — Enterprise Team Initiative</div>
+      <p>Large migrations succeed or fail based on how well you define "done." I contributed to establishing measurable acceptance criteria: row counts match source, key constraints preserved, ETL and BI workloads execute without regression, and performance meets or exceeds baseline. The 30% query improvement was a stated target, not a side effect.</p>
+    </div>
+    <div id="phase2" class="section fade">
+      <div class="section-title"><span class="num">03</span> Phase 2 — Batched Migration Loading</div>
+      <div class="contrib contributed">◈ Contributed — Migration Execution</div>
+      <p>10M+ rows cannot be migrated in a single transaction — log growth, lock pressure, and restart risk make that impractical. I helped implement a batched idempotent load pattern that moves controlled chunks with progress tracking and safe re-run capability.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Batch Migration Pattern</span><span class="code-disclaimer">Simulated pattern — no proprietary code</span></div>
+        <pre><code><span class="kw">DECLARE</span> <span class="nb">@BatchSize</span> <span class="tp">int</span> = <span class="nb">100000</span>;
+
+<span class="kw">WHILE</span> <span class="nb">1</span>=<span class="nb">1</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">INSERT INTO</span> dbo.Target (BusinessKey, Col1, Col2, Col3)
+  <span class="kw">SELECT TOP</span> (<span class="nb">@BatchSize</span>) s.BusinessKey, s.Col1, s.Col2, s.Col3
+  <span class="kw">FROM</span> dbo.Source s
+  <span class="kw">WHERE NOT EXISTS</span> (
+    <span class="kw">SELECT</span> <span class="nb">1</span> <span class="kw">FROM</span> dbo.Target t <span class="kw">WHERE</span> t.BusinessKey = s.BusinessKey
+  )
+  <span class="kw">ORDER BY</span> s.BusinessKey;
+
+  <span class="kw">IF</span> <span class="fn">@@ROWCOUNT</span> = <span class="nb">0</span> <span class="kw">BREAK</span>;
+<span class="kw">END</span></code></pre>
+      </div>
+    </div>
+    <div id="phase3" class="section fade">
+      <div class="section-title"><span class="num">04</span> Phase 3 — Reconciliation &amp; Validation</div>
+      <div class="contrib led">✦ I Directly Worked On This</div>
+      <p>Validation was multi-layered: row counts, sum checks on financial fields, and spot sampling of high-value records. All three layers together make "zero material data loss" defensible — not just a claim.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Three-Layer Validation Pattern</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- Layer 1: Row count reconciliation</span>
+<span class="kw">SELECT</span> <span class="str">'Source'</span> <span class="kw">AS</span> Side, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> Cnt <span class="kw">FROM</span> dbo.Source
+<span class="kw">UNION ALL</span>
+<span class="kw">SELECT</span> <span class="str">'Target'</span>, <span class="fn">COUNT</span>(*) <span class="kw">FROM</span> dbo.Target;
+
+<span class="cm">-- Layer 2: Financial sum reconciliation</span>
+<span class="kw">SELECT</span> <span class="fn">SUM</span>(Outstanding_Balance) <span class="kw">AS</span> SrcSum <span class="kw">FROM</span> dbo.Source;
+<span class="kw">SELECT</span> <span class="fn">SUM</span>(Outstanding_Balance) <span class="kw">AS</span> TgtSum <span class="kw">FROM</span> dbo.Target;
+
+<span class="cm">-- Layer 3: Spot-check high-value records</span>
+<span class="kw">SELECT TOP</span> <span class="nb">50</span> * <span class="kw">FROM</span> dbo.Target
+<span class="kw">ORDER BY</span> Outstanding_Balance <span class="kw">DESC</span>;</code></pre>
+      </div>
+    </div>
+    <div id="phase4" class="section fade">
+      <div class="section-title"><span class="num">05</span> Phase 4 — Post-Migration Index Strategy</div>
+      <div class="contrib led">✦ I Directly Led This</div>
+      <p>Bulk loads reset physical layout and statistics. Post-migration indexes must be rebuilt aligned to actual workload patterns — not speculative, not copied from the old system blindly. I profiled the top reporting queries and implemented targeted indexes.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — Index Strategy &amp; Statistics Refresh</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- Refresh statistics after bulk load (critical for plan quality)</span>
+<span class="kw">UPDATE STATISTICS</span> dbo.Target <span class="kw">WITH FULLSCAN</span>;
+
+<span class="cm">-- Covering index for top reporting predicates</span>
+<span class="kw">CREATE NONCLUSTERED INDEX</span> IX_Target_Report
+<span class="kw">ON</span> dbo.Target (AsOfDate, Region, LoanType)
+<span class="kw">INCLUDE</span> (Outstanding_Balance, Risk_Score, Default_Flag);
+
+<span class="cm">-- Detect top regressions post-migration</span>
+<span class="kw">SELECT TOP</span> <span class="nb">25</span>
+  qs.total_elapsed_time / <span class="fn">NULLIF</span>(qs.execution_count,<span class="nb">0</span>) <span class="kw">AS</span> avg_elapsed,
+  qs.total_logical_reads / <span class="fn">NULLIF</span>(qs.execution_count,<span class="nb">0</span>) <span class="kw">AS</span> avg_reads,
+  <span class="fn">SUBSTRING</span>(st.text,(qs.statement_start_offset/<span class="nb">2</span>)+<span class="nb">1</span>,
+    ((<span class="kw">CASE</span> qs.statement_end_offset <span class="kw">WHEN</span> -<span class="nb">1</span> <span class="kw">THEN</span> <span class="fn">DATALENGTH</span>(st.text)
+      <span class="kw">ELSE</span> qs.statement_end_offset <span class="kw">END</span> - qs.statement_start_offset)/<span class="nb">2</span>)+<span class="nb">1</span>) <span class="kw">AS</span> stmt
+<span class="kw">FROM</span> sys.dm_exec_query_stats qs
+<span class="kw">CROSS APPLY</span> sys.<span class="fn">dm_exec_sql_text</span>(qs.sql_handle) st
+<span class="kw">ORDER BY</span> avg_elapsed <span class="kw">DESC</span>;</code></pre>
+      </div>
+    </div>
+    <div id="phase5" class="section fade">
+      <div class="section-title"><span class="num">06</span> Phase 5 — Query Tuning for 30% Improvement</div>
+      <div class="contrib led">✦ I Directly Led This</div>
+      <p>Indexes alone rarely produce 30% gains. The complementary workstream was execution plan analysis and query refactoring — finding and fixing anti-patterns that prevent the optimizer from using the indexes effectively.</p>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-label">T-SQL — SARGable Predicate Pattern (Before vs After)</span><span class="code-disclaimer">Simulated pattern</span></div>
+        <pre><code><span class="cm">-- BEFORE: function on column forces scan, ignores index</span>
+<span class="cm">-- WHERE CONVERT(date, TransactionDate) = @d</span>
+
+<span class="cm">-- AFTER: range predicate enables index seek</span>
+<span class="kw">WHERE</span> TransactionDate >= <span class="nb">@d</span>
+  <span class="kw">AND</span> TransactionDate &lt; <span class="fn">DATEADD</span>(<span class="fn">day</span>, <span class="nb">1</span>, <span class="nb">@d</span>)
+
+<span class="cm">-- Window function replacing correlated subquery (5x faster on 10M rows)</span>
+<span class="cm">-- BEFORE: correlated subquery ran in ~8 seconds</span>
+<span class="cm">-- AFTER: window function with partition</span>
+<span class="kw">SELECT</span>
+  LoanID,
+  RiskScore,
+  <span class="fn">AVG</span>(RiskScore) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> LoanType) <span class="kw">AS</span> AvgByType,
+  RiskScore - <span class="fn">AVG</span>(RiskScore) <span class="kw">OVER</span> (<span class="kw">PARTITION BY</span> LoanType) <span class="kw">AS</span> Deviation
+<span class="kw">FROM</span> dbo.Target
+<span class="kw">WHERE</span> AsOfDate = <span class="nb">@AsOfDate</span>;</code></pre>
+      </div>
+      <div class="info-box green">
+        <div class="info-box-title">Why 30% is Defensible</div>
+        <p>Bulk-load migrations commonly degrade performance because statistics are stale and indexes are absent for new workload patterns. A targeted post-migration tuning sprint — profiling, indexing, plan analysis, and SARGability fixes — regularly produces 20-40% improvements on previously unoptimized workloads.</p>
+      </div>
+    </div>
+    <div id="results" class="section fade">
+      <div class="section-title"><span class="num">07</span> Results</div>
+      <div class="results-grid">
+        <div class="result-card"><div class="result-val">10M+</div><div class="result-desc">Records migrated as part of enterprise initiative with validated integrity at every layer</div></div>
+        <div class="result-card"><div class="result-val">+30%</div><div class="result-desc">Query performance improvement through post-migration indexing and execution plan optimization</div></div>
+        <div class="result-card"><div class="result-val">Zero</div><div class="result-desc">Material data loss — row counts, financial sums, and spot samples all reconciled to source</div></div>
+        <div class="result-card"><div class="result-val">5x</div><div class="result-desc">Faster execution for top correlated subquery patterns replaced with window functions</div></div>
+        <div class="result-card"><div class="result-val">Full</div><div class="result-desc">Statistics refresh with FULLSCAN on all major tables immediately post-cutover</div></div>
+        <div class="result-card"><div class="result-val">3 layers</div><div class="result-desc">Validation depth: row counts + financial sum reconciliation + high-value spot sampling</div></div>
+      </div>
+    </div>
+
+    <div class="bottom-nav fade">
+      <a href="index.html" class="btn-nav primary">← All Projects</a>
+      <a href="https://mattibalcha.github.io" class="btn-nav secondary">Main Site →</a>
+    </div>
+  </main>
+</div>
+<footer><div class="footer-inner"><div class="footer-brand">matti<span>.balcha</span> // 10m+ migration &amp; tuning</div><div class="footer-links"><a href="index.html">Portfolio</a><a href="https://mattibalcha.github.io">Main Site</a><a href="https://linkedin.com/in/mattibalcha">LinkedIn</a></div></div></footer>
+<script>
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.07});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+const navLinks=document.querySelectorAll('.sb-nav a');
+const sections=[...document.querySelectorAll('[id]')];
+window.addEventListener('scroll',()=>{let cur='';sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id});navLinks.forEach(a=>a.classList.toggle('active',a.getAttribute('href')==='#'+cur))});
+</script>
+</body>
+</html>

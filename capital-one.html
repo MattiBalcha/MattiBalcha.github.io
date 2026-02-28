@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Capital One Credit Risk Analysis & Reporting System — Full Case Study by Matti Balcha">
+<title>Capital One Case Study | Matti Balcha Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080E1E;--surface:#0D1628;--card:#111D35;--border:#1A2B4A;
+  --cyan:#22D3EE;--cyan-dim:rgba(34,211,238,0.10);--cyan-glow:rgba(34,211,238,0.22);
+  --blue:#3B82F6;--blue-dim:rgba(59,130,246,0.12);
+  --green:#34D399;--amber:#F59E0B;--red:#F87171;
+  --text:#E2E8F0;--muted:#7A8BA8;
+  --mono:'JetBrains Mono',monospace;--sans:'DM Sans',sans-serif;--display:'Syne',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:linear-gradient(rgba(34,211,238,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,0.018) 1px,transparent 1px);
+  background-size:48px 48px;}
+
+/* ── BACK BAR ── */
+.back-bar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(8,14,30,0.93);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;}
+.back-bar-inner{max-width:1200px;margin:0 auto;padding:0 24px;width:100%;
+  display:flex;align-items:center;justify-content:space-between;}
+.back-link{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;
+  letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s;}
+.back-link:hover{color:var(--cyan)}
+.back-link .arrow{color:var(--cyan)}
+.breadcrumb{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--muted);display:flex;align-items:center;gap:8px;}
+.breadcrumb .sep{color:var(--border);font-size:14px}
+.breadcrumb .current{color:var(--cyan)}
+
+/* ── LAYOUT: sidebar + content ── */
+.page-layout{
+  display:grid;
+  grid-template-columns:240px 1fr;
+  gap:0;
+  max-width:1200px;
+  margin:0 auto;
+  padding:0 24px;
+  padding-top:52px;
+  position:relative;z-index:1;
+  min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+  position:sticky;
+  top:52px;
+  height:calc(100vh - 52px);
+  overflow-y:auto;
+  padding:40px 24px 40px 0;
+  border-right:1px solid var(--border);
+  flex-shrink:0;
+}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+.sidebar-label{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:12px;margin-top:32px;}
+.sidebar-label:first-child{margin-top:0}
+
+.sidebar-nav{list-style:none;display:flex;flex-direction:column;gap:2px;}
+.sidebar-nav a{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:6px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;transition:all 0.2s;border:1px solid transparent;}
+.sidebar-nav a:hover{color:var(--cyan);background:var(--cyan-dim);border-color:rgba(34,211,238,0.15)}
+.sidebar-nav a.active{color:var(--cyan);background:var(--cyan-dim);border-color:rgba(34,211,238,0.2)}
+.sidebar-nav a .phase-num{
+  width:20px;height:20px;border-radius:4px;background:var(--surface);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;
+  font-size:9px;flex-shrink:0;transition:all 0.2s;
+}
+.sidebar-nav a:hover .phase-num,.sidebar-nav a.active .phase-num{
+  background:var(--cyan);color:var(--bg);border-color:var(--cyan);
+}
+
+.sidebar-metrics{margin-top:32px;}
+.sm-box{background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;margin-bottom:10px;}
+.sm-val{font-family:var(--display);font-size:22px;font-weight:800;color:var(--cyan);line-height:1;margin-bottom:4px;}
+.sm-label{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+
+/* MAIN CONTENT */
+.main-content{padding:48px 0 80px 48px;}
+
+/* HERO */
+.case-hero{margin-bottom:56px;}
+.case-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:16px;display:flex;align-items:center;gap:12px;}
+.case-eyebrow::before{content:'';width:24px;height:1px;background:var(--cyan)}
+.case-hero h1{font-family:var(--display);font-size:clamp(28px,3.5vw,46px);font-weight:800;
+  line-height:1.15;letter-spacing:-0.02em;color:#fff;margin-bottom:20px;}
+.case-hero h1 em{color:var(--cyan);font-style:normal}
+.hero-meta{display:flex;gap:24px;flex-wrap:wrap;margin-bottom:28px;}
+.hm{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:var(--muted);
+  display:flex;align-items:center;gap:6px;}
+.hm span{color:var(--text)}
+.role-badge{display:inline-flex;align-items:center;gap:8px;background:var(--cyan-dim);
+  border:1px solid rgba(34,211,238,0.2);border-radius:6px;padding:8px 16px;
+  font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:var(--cyan);}
+
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:0;}
+.mr-box{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;
+  position:relative;overflow:hidden;}
+.mr-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--blue));}
+.mr-val{font-family:var(--display);font-size:24px;font-weight:800;color:var(--green);line-height:1;margin-bottom:6px;}
+.mr-label{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+
+/* SECTION STYLES */
+.cs-section{margin-bottom:56px;padding-top:16px;}
+.cs-section-header{display:flex;align-items:center;gap:16px;margin-bottom:24px;
+  padding-bottom:16px;border-bottom:1px solid var(--border);}
+.phase-badge{
+  width:36px;height:36px;border-radius:8px;background:var(--cyan);color:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:14px;font-weight:800;flex-shrink:0;
+}
+.phase-badge.blue{background:var(--blue)}
+.phase-badge.green{background:var(--green);color:var(--bg)}
+.phase-badge.amber{background:var(--amber);color:var(--bg)}
+.phase-badge.icon{background:var(--surface);border:1px solid var(--border);font-size:18px;}
+.section-title-wrap{}
+.section-num{font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.cs-section h2{font-family:var(--display);font-size:22px;font-weight:800;color:#fff;line-height:1.2;}
+
+.cs-p{font-size:15px;color:var(--muted);line-height:1.85;margin-bottom:16px;}
+.cs-p strong{color:var(--text)}
+
+/* contribution label */
+.contrib-label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10px;letter-spacing:0.12em;text-transform:uppercase;
+  padding:4px 12px;border-radius:20px;margin-bottom:20px;
+}
+.contrib-label.led{color:var(--cyan);background:var(--cyan-dim);border:1px solid rgba(34,211,238,0.2)}
+.contrib-label.contributed{color:var(--amber);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
+.contrib-label.supported{color:var(--muted);background:var(--surface);border:1px solid var(--border)}
+.contrib-label::before{content:'●';font-size:8px;}
+
+/* bullet list */
+.cs-bullets{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px;}
+.cs-bullets li{display:flex;gap:12px;align-items:flex-start;font-size:14px;color:var(--muted);line-height:1.7;}
+.cs-bullets li::before{content:'▸';color:var(--cyan);flex-shrink:0;margin-top:2px;}
+.cs-bullets li strong{color:var(--text)}
+
+/* info box */
+.info-box{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--cyan);
+  border-radius:0 8px 8px 0;padding:20px 24px;margin-bottom:24px;}
+.info-box.amber{border-left-color:var(--amber)}
+.info-box.green{border-left-color:var(--green)}
+.info-box-title{font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:8px;}
+.info-box.amber .info-box-title{color:var(--amber)}
+.info-box.green .info-box-title{color:var(--green)}
+.info-box p{font-size:14px;color:var(--muted);line-height:1.75;}
+.info-box p strong{color:var(--text)}
+
+/* CODE BLOCKS */
+.code-block{margin:24px 0;border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.code-header{background:#0A0F1E;border-bottom:1px solid var(--border);
+  padding:12px 20px;display:flex;justify-content:space-between;align-items:center;}
+.code-lang{font-family:var(--mono);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--cyan);}
+.code-note{font-family:var(--mono);font-size:10px;color:var(--muted);}
+.code-body{background:#060B18;padding:24px;overflow-x:auto;}
+.code-body pre{font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#B0C4DE;}
+.kw{color:#22D3EE}  /* keywords */
+.fn{color:#93C5FD}  /* functions */
+.cm2{color:#4B5563;font-style:italic}  /* comments */
+.st{color:#86EFAC}  /* strings */
+.nm{color:#FCA5A5}  /* numbers/names */
+.op{color:#67E8F9}  /* operators */
+
+/* disclaimer */
+.disclaimer{background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);
+  border-radius:8px;padding:14px 20px;margin-bottom:24px;
+  font-family:var(--mono);font-size:11px;color:var(--amber);line-height:1.6;}
+
+/* pipeline diagram */
+.pipeline-diagram{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:32px;margin-bottom:32px;
+}
+.pd-title{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:24px;display:flex;align-items:center;gap:8px;}
+.pd-title::before{content:'●';color:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.pd-flow{display:flex;align-items:center;gap:0;overflow-x:auto;padding-bottom:8px;}
+.pd-node{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  min-width:100px;flex-shrink:0;
+}
+.pd-node-box{
+  width:72px;height:72px;border-radius:10px;background:var(--surface);
+  border:1px solid var(--border);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  transition:all 0.3s;cursor:default;
+}
+.pd-node-box:hover{border-color:var(--cyan);box-shadow:0 0 16px var(--cyan-dim)}
+.pd-node-icon{font-size:22px}
+.pd-node-sub{font-family:var(--mono);font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
+.pd-node-label{font-family:var(--mono);font-size:9px;color:var(--muted);text-transform:uppercase;
+  letter-spacing:0.08em;text-align:center;max-width:90px;}
+.pd-arrow{color:var(--cyan);font-size:20px;opacity:0.5;flex-shrink:0;padding:0 4px;margin-bottom:20px;}
+.pd-labels{display:flex;gap:16px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);}
+.pd-label-item{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--muted);}
+.pd-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+/* tech stack grid */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px;}
+.tech-item{background:var(--surface);border:1px solid var(--border);border-radius:8px;
+  padding:12px 14px;display:flex;align-items:center;gap:10px;transition:all 0.2s;}
+.tech-item:hover{border-color:var(--cyan);background:var(--cyan-dim)}
+.tech-icon{font-size:16px;flex-shrink:0}
+.tech-name{font-family:var(--mono);font-size:11px;color:var(--text)}
+
+/* results section */
+.results-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:24px;}
+.result-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--green);
+  border-radius:0 8px 8px 0;padding:20px 24px;}
+.result-metric{font-family:var(--display);font-size:28px;font-weight:800;color:var(--green);margin-bottom:4px;}
+.result-desc{font-size:13px;color:var(--muted);line-height:1.6;}
+
+/* endorsements */
+.end-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.end-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px;}
+.end-card.featured{grid-column:span 2;border-color:rgba(34,211,238,0.3);}
+.end-quote{font-size:14px;color:var(--muted);line-height:1.85;font-style:italic;margin-bottom:20px;}
+.end-quote::before{content:'\201C';font-family:var(--display);font-size:52px;color:var(--cyan);
+  opacity:0.25;line-height:0;vertical-align:-22px;margin-right:4px;}
+.end-author{border-top:1px solid var(--border);padding-top:16px;}
+.end-name{font-family:var(--display);font-size:15px;font-weight:700;color:#fff;margin-bottom:2px;}
+.end-role{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--cyan);}
+
+/* footer */
+footer{border-top:1px solid var(--border);padding:28px 0;position:relative;z-index:1;}
+.footer-inner{max-width:1200px;margin:0 auto;padding:0 24px;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-brand{font-family:var(--mono);font-size:12px;color:var(--muted);}
+.footer-brand span{color:var(--cyan)}
+.footer-nav{display:flex;gap:24px;}
+.footer-nav a{font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;
+  letter-spacing:0.08em;text-transform:uppercase;transition:color 0.2s;}
+.footer-nav a:hover{color:var(--cyan)}
+
+.fade{opacity:0;transform:translateY(18px);transition:opacity 0.5s,transform 0.5s}
+.fade.visible{opacity:1;transform:none}
+
+/* responsive */
+@media(max-width:900px){
+  .page-layout{grid-template-columns:1fr;padding-top:52px;}
+  .sidebar{position:relative;height:auto;top:0;border-right:none;border-bottom:1px solid var(--border);
+    padding:24px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;}
+  .sidebar-label{display:none}
+  .sidebar-metrics{display:none}
+  .sidebar-nav{flex-direction:row;flex-wrap:wrap;}
+  .main-content{padding:32px 0;}
+  .metrics-row{grid-template-columns:repeat(2,1fr);}
+  .results-grid{grid-template-columns:1fr;}
+  .end-grid{grid-template-columns:1fr;}
+  .end-card.featured{grid-column:span 1;}
+  .pd-flow{gap:0;}
+}
+@media(max-width:600px){
+  .metrics-row{grid-template-columns:1fr 1fr;}
+  .tech-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- BACK BAR -->
+<div class="back-bar">
+  <div class="back-bar-inner">
+    <a href="https://mattibalcha.github.io" class="back-link">
+      <span class="arrow">←</span> mattibalcha.github.io
+    </a>
+    <div class="breadcrumb">
+      <span>Matti Balcha</span>
+      <span class="sep">/</span>
+      <a href="index.html" style="color:var(--muted);text-decoration:none">Portfolio</a>
+      <span class="sep">/</span>
+      <span class="current">Capital One</span>
+    </div>
+  </div>
+</div>
+
+<div class="page-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-label">Navigation</div>
+    <ul class="sidebar-nav">
+      <li><a href="#overview" class="active"><span class="phase-num">0</span> Overview</a></li>
+      <li><a href="#phase1"><span class="phase-num">1</span> Requirements</a></li>
+      <li><a href="#phase2"><span class="phase-num">2</span> ETL & SSIS</a></li>
+      <li><a href="#phase3"><span class="phase-num">3</span> SSAS Cubes</a></li>
+      <li><a href="#phase4"><span class="phase-num">4</span> Power BI</a></li>
+      <li><a href="#phase5"><span class="phase-num">5</span> SSRS Reports</a></li>
+      <li><a href="#code"><span class="phase-num">✦</span> Code</a></li>
+      <li><a href="#results"><span class="phase-num">↗</span> Results</a></li>
+      <li><a href="#endorsements"><span class="phase-num">★</span> Endorsed</a></li>
+    </ul>
+
+    <div class="sidebar-label">Key Metrics</div>
+    <div class="sidebar-metrics">
+      <div class="sm-box"><div class="sm-val">−40%</div><div class="sm-label">ETL Dev Time</div></div>
+      <div class="sm-box"><div class="sm-val">+20%</div><div class="sm-label">BI Accuracy</div></div>
+      <div class="sm-box"><div class="sm-val">+30%</div><div class="sm-label">Query Speed</div></div>
+      <div class="sm-box"><div class="sm-val">10M+</div><div class="sm-label">Records Moved</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- HERO -->
+    <div class="case-hero fade" id="overview">
+      <div class="case-eyebrow">Case Study · Capital One · Nov 2022 – Jul 2024</div>
+      <h1>Credit Risk Analysis<br>& <em>Reporting System</em></h1>
+      <div class="hero-meta">
+        <div class="hm">🏦 <span>Capital One · Top-5 U.S. Bank</span></div>
+        <div class="hm">📍 <span>Richmond, VA (Hybrid)</span></div>
+        <div class="hm">⏱ <span>~20 months</span></div>
+        <div class="hm">👥 <span>Cross-functional team</span></div>
+      </div>
+      <div style="margin-bottom:28px">
+        <span class="role-badge">My Role: SQL / ETL / SSIS Developer & BI Specialist</span>
+      </div>
+      <div class="metrics-row">
+        <div class="mr-box"><div class="mr-val">−40%</div><div class="mr-label">ETL Development Time</div></div>
+        <div class="mr-box"><div class="mr-val">+20%</div><div class="mr-label">BI Accuracy</div></div>
+        <div class="mr-box"><div class="mr-val">+30%</div><div class="mr-label">Query Performance</div></div>
+        <div class="mr-box"><div class="mr-val">+25%</div><div class="mr-label">Anomaly Detection</div></div>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div class="cs-section fade">
+      <div class="cs-section-header">
+        <div class="phase-badge icon">🎯</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Project Overview</div>
+          <h2>The Challenge</h2>
+        </div>
+      </div>
+      <div class="pipeline-diagram">
+        <div class="pd-title">Data Pipeline Architecture</div>
+        <div class="pd-flow">
+          <div class="pd-node">
+            <div class="pd-node-box"><div class="pd-node-icon">📋</div><div class="pd-node-sub">Loan Apps</div></div>
+            <div class="pd-node-label">Loan Application System</div>
+          </div>
+          <div class="pd-arrow">→</div>
+          <div class="pd-node">
+            <div class="pd-node-box"><div class="pd-node-icon">💳</div><div class="pd-node-sub">Transactions</div></div>
+            <div class="pd-node-label">Customer Transaction History</div>
+          </div>
+          <div class="pd-arrow">→</div>
+          <div class="pd-node">
+            <div class="pd-node-box" style="border-color:rgba(34,211,238,0.4)"><div class="pd-node-icon">⚙️</div><div class="pd-node-sub">SSIS ETL</div></div>
+            <div class="pd-node-label">Transform & Load</div>
+          </div>
+          <div class="pd-arrow">→</div>
+          <div class="pd-node">
+            <div class="pd-node-box"><div class="pd-node-icon">🏛️</div><div class="pd-node-sub">DW / SSAS</div></div>
+            <div class="pd-node-label">Star Schema Data Warehouse</div>
+          </div>
+          <div class="pd-arrow">→</div>
+          <div class="pd-node">
+            <div class="pd-node-box"><div class="pd-node-icon">📊</div><div class="pd-node-sub">Power BI</div></div>
+            <div class="pd-node-label">BI Dashboards</div>
+          </div>
+          <div class="pd-arrow">→</div>
+          <div class="pd-node">
+            <div class="pd-node-box"><div class="pd-node-icon">📄</div><div class="pd-node-sub">SSRS</div></div>
+            <div class="pd-node-label">15+ BU Compliance Reports</div>
+          </div>
+        </div>
+        <div class="pd-labels">
+          <div class="pd-label-item"><div class="pd-dot" style="background:var(--cyan)"></div> 5+ source systems integrated</div>
+          <div class="pd-label-item"><div class="pd-dot" style="background:var(--green)"></div> 10M+ records migrated</div>
+          <div class="pd-label-item"><div class="pd-dot" style="background:var(--amber)"></div> Daily automated refresh</div>
+          <div class="pd-label-item"><div class="pd-dot" style="background:var(--blue)"></div> 15+ business units served</div>
+        </div>
+      </div>
+      <p class="cs-p">Capital One's Credit Risk Management department needed to <strong>proactively monitor, analyze, and mitigate credit risk</strong> across a diverse loan portfolio. Data was scattered across 5+ heterogeneous source systems — loan application systems, customer transaction histories, credit bureau reports — with inconsistent formats and no unified analytics layer.</p>
+      <p class="cs-p">The team needed real-time risk visibility, automated compliance reporting, and a scalable data foundation that could handle growing volumes without degrading performance.</p>
+    </div>
+
+    <!-- PHASE 1 -->
+    <div class="cs-section fade" id="phase1">
+      <div class="cs-section-header">
+        <div class="phase-badge">1</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Phase 1 · 4 Weeks</div>
+          <h2>Requirements & Data Understanding</h2>
+        </div>
+      </div>
+      <span class="contrib-label contributed">Contributed — team effort</span>
+      <p class="cs-p">The first phase was a cross-functional discovery effort. I participated in stakeholder interviews with the Credit Risk Management team, data analysts, and compliance officers to define the key risk metrics the system needed to surface.</p>
+      <ul class="cs-bullets">
+        <li>Participated in stakeholder interviews to define key credit risk metrics: <strong>loan default rates, credit utilization ratios, customer credit score distributions</strong></li>
+        <li>Analyzed existing data sources across loan applications, customer transaction history, and credit bureau reports — documenting formats, volumes, and quality issues</li>
+        <li>Contributed to target database schema design — identifying fact tables (loan performance, risk events) and dimension tables (customer, geography, loan type, time)</li>
+        <li>Documented data quality issues and proposed cleansing rules for the ETL layer</li>
+      </ul>
+      <div class="info-box">
+        <div class="info-box-title">Key Output From This Phase</div>
+        <p>Agreed schema design with <strong>star schema fact/dimension structure</strong> covering loan performance, customer demographics, geography, and time dimensions. This became the blueprint for my ETL and SSAS work in Phase 2 and 3.</p>
+      </div>
+    </div>
+
+    <!-- PHASE 2 -->
+    <div class="cs-section fade" id="phase2">
+      <div class="cs-section-header">
+        <div class="phase-badge">2</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Phase 2 · 6 Weeks</div>
+          <h2>ETL Development & Data Warehousing</h2>
+        </div>
+      </div>
+      <span class="contrib-label led">I Led This Phase</span>
+      <p class="cs-p">This was my primary ownership area. I <strong>engineered the SSIS ETL pipeline architecture</strong> from the ground up — designing a reusable template framework that standardized how all source systems fed into the data warehouse.</p>
+      <ul class="cs-bullets">
+        <li><strong>Designed and developed SSIS packages</strong> to automate extraction, transformation, and loading from loan application systems, customer transaction histories, and credit bureau reports</li>
+        <li>Built a <strong>reusable SSIS template framework</strong> with standardized error handling, logging, and retry logic — reducing future ETL development time by 40%</li>
+        <li>Implemented <strong>robust data validation and cleansing</strong> at the transformation stage: null checks, referential integrity enforcement, business rule validation</li>
+        <li>Optimized ETL pipelines for <strong>parallel processing</strong> — breaking large extracts into partitioned loads to handle increasing data volumes without extending the processing window</li>
+        <li>Contributed to the <strong>10M+ record database migration</strong> — schema conversion, data type reconciliation, and validation — achieving 30% query performance improvement post-migration</li>
+        <li>Automated ETL workflows to guarantee <strong>consistent, timely updates</strong> to credit risk metrics — increasing operational efficiency by 50%</li>
+      </ul>
+      <div class="info-box green">
+        <div class="info-box-title">Impact</div>
+        <p>The reusable template framework meant that adding a new source system — what previously took a developer days — now took hours. <strong>ETL development time reduced 40%</strong> across the team for all subsequent pipeline work.</p>
+      </div>
+    </div>
+
+    <!-- PHASE 3 -->
+    <div class="cs-section fade" id="phase3">
+      <div class="cs-section-header">
+        <div class="phase-badge blue">3</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Phase 3 · Part of Phase 2</div>
+          <h2>Multidimensional Analysis with SSAS</h2>
+        </div>
+      </div>
+      <span class="contrib-label contributed">Contributed — alongside BI team</span>
+      <p class="cs-p">I contributed to the design and deployment of SSAS cubes that enabled the credit risk team to slice and analyze risk data across multiple dimensions simultaneously — geography, loan type, customer demographics, and time.</p>
+      <ul class="cs-bullets">
+        <li>Helped build and deploy <strong>SSAS cubes</strong> for in-depth credit risk analysis — enabling multidimensional queries that flat SQL could not efficiently serve</li>
+        <li>Designed <strong>dimensions and hierarchies</strong>: regional and state-level risk geography, customer age/income/credit score demographics, secured vs. unsecured loan type breakdowns</li>
+        <li>Added <strong>calculated measures</strong>: average default rates, credit score trend calculations, risk exposure totals, and portfolio concentration metrics</li>
+        <li>Contributed to <strong>cube performance optimization</strong> — partitioning, aggregation design — enabling near-real-time query response for risk analysts</li>
+        <li>Result: risk teams could <strong>identify trends and anomalies 25% faster</strong> than with previous flat report approach</li>
+      </ul>
+    </div>
+
+    <!-- PHASE 4 -->
+    <div class="cs-section fade" id="phase4">
+      <div class="cs-section-header">
+        <div class="phase-badge green">4</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Phase 4 · 6 Weeks</div>
+          <h2>Power BI Dashboard Development</h2>
+        </div>
+      </div>
+      <span class="contrib-label contributed">Contributed — collaborated with Power BI team</span>
+      <p class="cs-p">I collaborated with Power BI developers to design and build the interactive dashboard layer that gave credit risk managers real-time visibility into the portfolio health.</p>
+      <ul class="cs-bullets">
+        <li>Developed and maintained <strong>Power BI dashboards</strong> providing real-time credit risk insights — enhancing risk monitoring accuracy by 20%</li>
+        <li>Incorporated <strong>drill-down capabilities, slicers, and cross-filters</strong> so analysts could move from portfolio-level summary down to individual loan or customer detail in seconds</li>
+        <li>Designed key risk visualizations: <strong>loan default trend lines, risk segmentation maps by region, customer credit score distribution histograms, portfolio exposure waterfall charts</strong></li>
+        <li>Configured <strong>automated data refresh schedules</strong> — dashboards updated on defined intervals to maintain near-real-time accuracy without manual intervention</li>
+        <li>Worked with stakeholders to ensure the dashboard language matched how risk managers actually thought about the business — not just what the data contained</li>
+      </ul>
+    </div>
+
+    <!-- PHASE 5 -->
+    <div class="cs-section fade" id="phase5">
+      <div class="cs-section-header">
+        <div class="phase-badge" style="background:var(--amber);color:var(--bg)">5</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Phase 5 · Ongoing</div>
+          <h2>SSRS Compliance Reporting & Automation</h2>
+        </div>
+      </div>
+      <span class="contrib-label led">I Led This — owned delivery end to end</span>
+      <p class="cs-p">I owned the design and automation of the SSRS compliance reporting layer — the system that delivered scheduled regulatory and executive reports to 15+ business units automatically.</p>
+      <ul class="cs-bullets">
+        <li>Designed and built <strong>SSRS reports</strong> covering: loan performance trends by region and type, high-risk loan segment identification, regulatory compliance metrics, and monthly risk exposure summaries</li>
+        <li>Configured <strong>automated email delivery subscriptions</strong> — reports delivered in PDF and Excel formats to 15+ business unit stakeholders on defined schedules without manual intervention</li>
+        <li>Built <strong>parameterized reports</strong> allowing managers to self-serve filtered views — by date range, geography, loan type — without requesting new reports from the BI team</li>
+        <li>Incorporated <strong>data audit trails and version history</strong> to meet financial regulatory compliance requirements</li>
+        <li>Automated test cases using <strong>Selenium and Postman</strong> to validate report data against source — ensuring data integrity across the full pipeline</li>
+      </ul>
+      <div class="info-box amber">
+        <div class="info-box-title">Why This Mattered</div>
+        <p>Before this system, compliance reports were manually compiled and distributed — a process prone to delays and human error. After automation, <strong>15+ business units received accurate, on-time reports without any manual effort</strong> from the BI or data team.</p>
+      </div>
+    </div>
+
+    <!-- CODE SECTION -->
+    <div class="cs-section fade" id="code">
+      <div class="cs-section-header">
+        <div class="phase-badge icon">💻</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Technical Samples</div>
+          <h2>Code & Logic Demonstrations</h2>
+        </div>
+      </div>
+      <div class="disclaimer">
+        ⚠ DISCLAIMER — All code samples below are simulated reconstructions using anonymized, fictional data. No proprietary Capital One code, data, schemas, or logic is reproduced here. These samples demonstrate the same technical patterns and approaches used in the actual project.
+      </div>
+
+      <!-- CODE 1: ETL SSIS stored proc pattern -->
+      <p class="cs-p" style="margin-bottom:12px"><strong>Sample 1 — ETL Staging Load with Validation & Error Logging</strong></p>
+      <p class="cs-p" style="margin-bottom:16px">This pattern was central to my SSIS template framework — a stored procedure called by SSIS that handles incremental load, deduplication, business rule validation, and structured error logging in one transaction.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">T-SQL · Stored Procedure</span>
+          <span class="code-note">Simulated · Not proprietary</span>
+        </div>
+        <div class="code-body"><pre><span class="cm2">-- ═══════════════════════════════════════════════════
+-- Stored Proc: usp_LoadLoanPerformanceStaging
+-- Purpose:     Incremental load from source → staging
+--              with validation, dedup, and error logging
+-- Called by:   SSIS Execute SQL Task (Phase 2 pipeline)
+-- ═══════════════════════════════════════════════════</span>
+
+<span class="kw">CREATE PROCEDURE</span> <span class="fn">usp_LoadLoanPerformanceStaging</span>
+    @BatchDate      <span class="kw">DATE</span>,
+    @SourceSystem   <span class="kw">VARCHAR</span>(<span class="nm">50</span>),
+    @RecordsLoaded  <span class="kw">INT</span> <span class="kw">OUTPUT</span>,
+    @ErrorCount     <span class="kw">INT</span> <span class="kw">OUTPUT</span>
+<span class="kw">AS</span>
+<span class="kw">BEGIN</span>
+    <span class="kw">SET NOCOUNT ON</span>;
+    <span class="kw">SET XACT_ABORT ON</span>;
+
+    <span class="kw">DECLARE</span> @ProcStart  <span class="kw">DATETIME2</span> = <span class="fn">SYSDATETIME</span>();
+    <span class="kw">DECLARE</span> @StepName   <span class="kw">VARCHAR</span>(<span class="nm">100</span>);
+
+    <span class="kw">BEGIN TRY</span>
+        <span class="cm2">-- ── Step 1: Truncate today's staging partition ──</span>
+        <span class="kw">SET</span> @StepName = <span class="st">'TruncateStaging'</span>;
+        <span class="kw">DELETE FROM</span> stg.LoanPerformance
+        <span class="kw">WHERE</span> BatchDate = @BatchDate
+          <span class="kw">AND</span> SourceSystem = @SourceSystem;
+
+        <span class="cm2">-- ── Step 2: Insert validated records ──</span>
+        <span class="kw">SET</span> @StepName = <span class="st">'InsertValidated'</span>;
+        <span class="kw">INSERT INTO</span> stg.LoanPerformance
+               (LoanID, CustomerID, LoanType, OriginalBalance,
+                CurrentBalance, DaysDelinquent, RiskScore,
+                BatchDate, SourceSystem, LoadedAt)
+        <span class="kw">SELECT</span>
+               src.LoanID,
+               src.CustomerID,
+               src.LoanType,
+               src.OriginalBalance,
+               src.CurrentBalance,
+               src.DaysDelinquent,
+               <span class="cm2">-- Business rule: clamp risk score to valid range</span>
+               <span class="kw">CASE WHEN</span> src.RiskScore <span class="kw">BETWEEN</span> <span class="nm">0</span> <span class="kw">AND</span> <span class="nm">1000</span>
+                    <span class="kw">THEN</span> src.RiskScore
+                    <span class="kw">ELSE NULL</span>
+               <span class="kw">END</span>                                <span class="kw">AS</span> RiskScore,
+               @BatchDate,
+               @SourceSystem,
+               <span class="fn">SYSDATETIME</span>()
+        <span class="kw">FROM</span>   raw.LoanPerformance_Source src
+        <span class="kw">WHERE</span>  src.BatchDate  = @BatchDate
+          <span class="kw">AND</span>  src.LoanID    <span class="kw">IS NOT NULL</span>   <span class="cm2">-- null key = reject</span>
+          <span class="kw">AND</span>  src.CustomerID <span class="kw">IS NOT NULL</span>
+          <span class="kw">AND NOT EXISTS</span> (                  <span class="cm2">-- dedup check</span>
+               <span class="kw">SELECT</span> <span class="nm">1</span> <span class="kw">FROM</span> stg.LoanPerformance ex
+               <span class="kw">WHERE</span> ex.LoanID = src.LoanID
+                 <span class="kw">AND</span> ex.BatchDate = @BatchDate);
+
+        <span class="kw">SET</span> @RecordsLoaded = <span class="fn">@@ROWCOUNT</span>;
+
+        <span class="cm2">-- ── Step 3: Count validation failures ──</span>
+        <span class="kw">SELECT</span> @ErrorCount = <span class="fn">COUNT</span>(*)
+        <span class="kw">FROM</span>   raw.LoanPerformance_Source
+        <span class="kw">WHERE</span>  BatchDate = @BatchDate
+          <span class="kw">AND</span>  (LoanID <span class="kw">IS NULL OR</span> CustomerID <span class="kw">IS NULL</span>);
+
+        <span class="cm2">-- ── Step 4: Log batch run ──</span>
+        <span class="kw">INSERT INTO</span> audit.ETL_BatchLog
+               (ProcName, SourceSystem, BatchDate,
+                RecordsLoaded, ErrorCount, DurationMs, RunAt)
+        <span class="kw">VALUES</span> (<span class="st">'usp_LoadLoanPerformanceStaging'</span>, @SourceSystem,
+                @BatchDate, @RecordsLoaded, @ErrorCount,
+                <span class="fn">DATEDIFF</span>(<span class="kw">MILLISECOND</span>, @ProcStart, <span class="fn">SYSDATETIME</span>()),
+                <span class="fn">SYSDATETIME</span>());
+
+    <span class="kw">END TRY</span>
+    <span class="kw">BEGIN CATCH</span>
+        <span class="kw">INSERT INTO</span> audit.ETL_ErrorLog
+               (ProcName, StepName, ErrorMsg, BatchDate, LoggedAt)
+        <span class="kw">VALUES</span> (<span class="st">'usp_LoadLoanPerformanceStaging'</span>, @StepName,
+                <span class="fn">ERROR_MESSAGE</span>(), @BatchDate, <span class="fn">SYSDATETIME</span>());
+        <span class="kw">THROW</span>;
+    <span class="kw">END CATCH</span>
+<span class="kw">END</span>;</pre></div>
+      </div>
+
+      <!-- CODE 2: Query optimization -->
+      <p class="cs-p" style="margin-bottom:12px;margin-top:32px"><strong>Sample 2 — Credit Risk Report Query (Before & After Optimization)</strong></p>
+      <p class="cs-p" style="margin-bottom:16px">One of my key contributions was optimizing slow-running report queries. Here is the pattern I applied — rewriting correlated subqueries to window functions and adding covering indexes — achieving the 30% report generation improvement.</p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">T-SQL · Query Optimization</span>
+          <span class="code-note">Simulated · Not proprietary</span>
+        </div>
+        <div class="code-body"><pre><span class="cm2">/* ─────────────────────────────────────────────
+   BEFORE: Correlated subquery — ran in ~8 seconds
+   on 10M row table. Caused report timeout issues.
+───────────────────────────────────────────── */</span>
+<span class="kw">SELECT</span>
+    l.LoanID,
+    l.CustomerID,
+    l.RiskScore,
+    (<span class="kw">SELECT</span> <span class="fn">AVG</span>(l2.RiskScore)         <span class="cm2">-- correlated = re-runs per row</span>
+     <span class="kw">FROM</span>   dw.FactLoanPerformance l2
+     <span class="kw">WHERE</span>  l2.LoanType = l.LoanType) <span class="kw">AS</span> AvgRiskByType
+<span class="kw">FROM</span>   dw.FactLoanPerformance l;
+
+<span class="cm2">/* ─────────────────────────────────────────────
+   AFTER: Window function — runs in ~1.5 seconds.
+   Same result, 5x faster. Added covering index
+   on (LoanType, RiskScore) to support it.
+───────────────────────────────────────────── */</span>
+<span class="kw">SELECT</span>
+    l.LoanID,
+    l.CustomerID,
+    l.LoanType,
+    l.RiskScore,
+    <span class="fn">AVG</span>(l.RiskScore) <span class="kw">OVER</span> (
+        <span class="kw">PARTITION BY</span> l.LoanType
+    )                                   <span class="kw">AS</span> AvgRiskByType,
+    l.RiskScore - <span class="fn">AVG</span>(l.RiskScore) <span class="kw">OVER</span> (
+        <span class="kw">PARTITION BY</span> l.LoanType
+    )                                   <span class="kw">AS</span> RiskDeviation,
+    <span class="kw">CASE</span>
+        <span class="kw">WHEN</span> l.RiskScore &gt; <span class="fn">AVG</span>(l.RiskScore) <span class="kw">OVER</span> (
+             <span class="kw">PARTITION BY</span> l.LoanType) * <span class="nm">1.25</span>
+        <span class="kw">THEN</span> <span class="st">'HIGH'</span>
+        <span class="kw">WHEN</span> l.RiskScore &lt; <span class="fn">AVG</span>(l.RiskScore) <span class="kw">OVER</span> (
+             <span class="kw">PARTITION BY</span> l.LoanType) * <span class="nm">0.75</span>
+        <span class="kw">THEN</span> <span class="st">'LOW'</span>
+        <span class="kw">ELSE</span> <span class="st">'NORMAL'</span>
+    <span class="kw">END</span>                                 <span class="kw">AS</span> RiskCategory
+<span class="kw">FROM</span>   dw.FactLoanPerformance l
+<span class="kw">WHERE</span>  l.BatchDate &gt;= <span class="fn">DATEADD</span>(<span class="kw">MONTH</span>, -<span class="nm">3</span>, <span class="fn">GETDATE</span>());
+
+<span class="cm2">-- Supporting index created alongside this refactor:
+-- CREATE INDEX IX_FactLoan_TypeRisk
+--   ON dw.FactLoanPerformance (LoanType, RiskScore)
+--   INCLUDE (LoanID, CustomerID, BatchDate);</span></pre></div>
+      </div>
+
+      <!-- CODE 3: SSRS/DAX pattern -->
+      <p class="cs-p" style="margin-bottom:12px;margin-top:32px"><strong>Sample 3 — Power BI DAX: Default Rate & Rolling 3-Month Average</strong></p>
+      <div class="code-block">
+        <div class="code-header">
+          <span class="code-lang">DAX · Power BI Measures</span>
+          <span class="code-note">Simulated · Not proprietary</span>
+        </div>
+        <div class="code-body"><pre><span class="cm2">-- Default Rate % (used on main risk dashboard)</span>
+Default Rate % =
+<span class="kw">DIVIDE</span>(
+    <span class="fn">COUNTROWS</span>(
+        <span class="kw">FILTER</span>(FactLoanPerformance,
+               FactLoanPerformance[DaysDelinquent] >= <span class="nm">90</span>)
+    ),
+    <span class="fn">COUNTROWS</span>(FactLoanPerformance),
+    <span class="nm">0</span>
+)
+
+<span class="cm2">-- 3-Month Rolling Average Default Rate (time intelligence)</span>
+Default Rate 3M Avg =
+<span class="kw">CALCULATE</span>(
+    [Default Rate %],
+    <span class="fn">DATESINPERIOD</span>(
+        DimDate[Date],
+        <span class="fn">LASTDATE</span>(DimDate[Date]),
+        -<span class="nm">3</span>,
+        <span class="kw">MONTH</span>
+    )
+)
+
+<span class="cm2">-- High Risk Loan Flag (used in slicer/alert tile)</span>
+High Risk Flag =
+<span class="kw">IF</span>(
+    <span class="fn">SELECTEDVALUE</span>(FactLoanPerformance[RiskScore]) >
+    <span class="kw">CALCULATE</span>(
+        <span class="fn">AVERAGE</span>(FactLoanPerformance[RiskScore]),
+        <span class="kw">ALL</span>(FactLoanPerformance)
+    ) * <span class="nm">1.3</span>,
+    <span class="st">"⚠ HIGH RISK"</span>,
+    <span class="st">"NORMAL"</span>
+)</pre></div>
+      </div>
+    </div>
+
+    <!-- TECH STACK -->
+    <div class="cs-section fade">
+      <div class="cs-section-header">
+        <div class="phase-badge icon">🛠</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Full Stack</div>
+          <h2>Technologies Used</h2>
+        </div>
+      </div>
+      <div class="tech-grid">
+        <div class="tech-item"><div class="tech-icon">🗄️</div><div class="tech-name">SQL Server 2019</div></div>
+        <div class="tech-item"><div class="tech-icon">⚙️</div><div class="tech-name">SSIS</div></div>
+        <div class="tech-item"><div class="tech-icon">📊</div><div class="tech-name">Power BI</div></div>
+        <div class="tech-item"><div class="tech-icon">🧊</div><div class="tech-name">SSAS Tabular</div></div>
+        <div class="tech-item"><div class="tech-icon">📄</div><div class="tech-name">SSRS</div></div>
+        <div class="tech-item"><div class="tech-icon">🔷</div><div class="tech-name">T-SQL / DAX</div></div>
+        <div class="tech-item"><div class="tech-icon">🧪</div><div class="tech-name">Selenium</div></div>
+        <div class="tech-item"><div class="tech-icon">📮</div><div class="tech-name">Postman</div></div>
+        <div class="tech-item"><div class="tech-icon">📐</div><div class="tech-name">Kimball DW</div></div>
+        <div class="tech-item"><div class="tech-icon">🌟</div><div class="tech-name">Star Schema</div></div>
+        <div class="tech-item"><div class="tech-icon">🔀</div><div class="tech-name">SCD Type 2</div></div>
+        <div class="tech-item"><div class="tech-icon">📋</div><div class="tech-name">Visual Studio</div></div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="cs-section fade" id="results">
+      <div class="cs-section-header">
+        <div class="phase-badge icon">↗</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Measured Outcomes</div>
+          <h2>Results</h2>
+        </div>
+      </div>
+      <div class="results-grid">
+        <div class="result-card">
+          <div class="result-metric">−40%</div>
+          <div class="result-desc">ETL development time — reusable SSIS template framework cut future pipeline build time in half</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">+20%</div>
+          <div class="result-desc">BI accuracy — Power BI dashboards connected to validated dimensional model improved reporting reliability</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">+30%</div>
+          <div class="result-desc">Query performance — post-migration index strategy and query refactoring on 10M+ record warehouse</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">+25%</div>
+          <div class="result-desc">Anomaly detection speed — SSAS cube dimensional analysis let risk teams find issues 25% faster</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">−40%</div>
+          <div class="result-desc">Manual processing time — automated ETL workflows eliminated repetitive manual data preparation</div>
+        </div>
+        <div class="result-card">
+          <div class="result-metric">15+</div>
+          <div class="result-desc">Business units served — automated SSRS report distribution on defined schedules, zero manual effort</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENDORSEMENTS -->
+    <div class="cs-section fade" id="endorsements">
+      <div class="cs-section-header">
+        <div class="phase-badge icon">★</div>
+        <div class="section-title-wrap">
+          <div class="section-num">Colleague Endorsements</div>
+          <h2>What the Team Said</h2>
+        </div>
+      </div>
+      <div class="end-grid">
+        <div class="end-card featured">
+          <div class="end-quote">
+            Matti demonstrated exceptional skill in developing and optimizing SSIS pipelines, ensuring seamless data integration across multiple systems. His ability to create and deploy robust SSAS cubes enabled the team to perform detailed credit risk analysis, uncovering critical trends and anomalies with remarkable speed. Additionally, his work on optimizing SQL queries and automating ETL workflows resulted in significant improvements in processing efficiency and report generation times. Matti's collaborative spirit made him a key contributor to the project's success. From designing Power BI dashboards that empowered stakeholders with real-time insights to automating compliance reports, his impact was felt across all aspects of the project. I highly recommend Matti as a skilled and dedicated data professional who consistently delivers outstanding results.
+          </div>
+          <div class="end-author">
+            <div class="end-name">Bethelihem Gebrehiwote</div>
+            <div class="end-role">ETL / SQL Developer & BI Developer · Capital One</div>
+          </div>
+        </div>
+        <div class="end-card">
+          <div class="end-quote">
+            Matti's expertise as an ETL/SQL Developer and BI Specialist was instrumental in the success of this complex initiative. His ability to design star and snowflake schemas and optimize SSAS cubes enabled faster and more efficient data analysis. His fine-tuning of SQL queries and stored procedures resulted in a notable 30% improvement in report generation time. Beyond his technical skills, Matti's dedication to maintaining high-quality documentation and adhering to best practices ensured the long-term scalability and maintainability of our systems. I would gladly work with Matti again on any future projects.
+          </div>
+          <div class="end-author">
+            <div class="end-name">Senior Colleague</div>
+            <div class="end-role">ETL / SQL Developer · Capital One</div>
+          </div>
+        </div>
+        <div class="end-card">
+          <div class="end-quote">
+            Matti brought exceptional skill in developing and optimizing SSIS pipelines, seamlessly integrating data from multiple sources while reducing manual processing time significantly. His ability to design and implement robust SSAS cubes enabled our team to uncover insights faster and with greater precision. What sets Matti apart is not just his technical acumen but also his ability to foster teamwork and share knowledge — always proactive in finding solutions and ensuring the project's success.
+          </div>
+          <div class="end-author">
+            <div class="end-name">Senior Colleague</div>
+            <div class="end-role">BI Developer · Capital One</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:40px;padding-top:40px;border-top:1px solid var(--border)">
+      <a href="index.html" style="display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);
+        font-size:12px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);
+        text-decoration:none;border:1px solid var(--border);padding:10px 20px;border-radius:6px;
+        transition:all 0.2s" onmouseover="this.style.borderColor='var(--cyan)';this.style.color='var(--cyan)'"
+        onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+        ← All Projects
+      </a>
+      <a href="https://mattibalcha.github.io" style="display:inline-flex;align-items:center;gap:8px;
+        font-family:var(--mono);font-size:12px;letter-spacing:0.08em;text-transform:uppercase;
+        color:var(--bg);background:var(--cyan);padding:10px 20px;border-radius:6px;text-decoration:none;
+        transition:all 0.2s;border:1px solid transparent"
+        onmouseover="this.style.background='#38EEF8'"
+        onmouseout="this.style.background='var(--cyan)'">
+        Main Site →
+      </a>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">matti<span>.balcha</span> // capital one case study</div>
+    <div class="footer-nav">
+      <a href="index.html">Portfolio</a>
+      <a href="https://mattibalcha.github.io">Main Site</a>
+      <a href="https://linkedin.com/in/mattibalcha">LinkedIn</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Fade in
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('visible')})},{threshold:0.06});
+document.querySelectorAll('.fade').forEach(el=>obs.observe(el));
+
+// Active sidebar link
+const sections=document.querySelectorAll('[id]');
+const navLinks=document.querySelectorAll('.sidebar-nav a');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-120)cur=s.id});
+  navLinks.forEach(a=>{
+    a.classList.toggle('active',a.getAttribute('href')==='#'+cur);
+  });
+});
+</script>
+</body>
+</html>
